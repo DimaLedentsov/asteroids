@@ -16,7 +16,7 @@ public final class Body {
         angle += angleVel;
         pos.add(vel);
     }
-    public Body(float[] vertices, ){
+    public Body(float[] vertices){
 
     }
     public Polygon getShape(){
