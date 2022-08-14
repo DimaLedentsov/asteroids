@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -11,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Shape2D;
@@ -84,6 +86,7 @@ public class Player extends GameObjectImpl implements Dieable, Forceable{
     public void render(){
 
         ShapeRenderer sb = game.getRenderer();
+        
         sb.begin(ShapeRenderer.ShapeType.Line);
         sb.setColor(Color.WHITE);
         sb.polygon(shape.getTransformedVertices());
@@ -98,12 +101,24 @@ public class Player extends GameObjectImpl implements Dieable, Forceable{
 	    float dx = pos.x - obj.getPosition().x;
 	    float dy = pos.y - obj.getPosition().y;///////////////
         
-	    float angle = (float) Math.atan2((double)dy,(double)dx);
+	    /*float angle = (float) Math.atan2((double)dy,(double)dx);
 	    float dirx = (float)Math.cos(angle);
-	    float diry = (float)Math.sin(angle);
-        vel.rotateDeg(180).scl(0.5f);
+	    float diry = (float)Math.sin(angle);*/
+        float angle = MathUtils.atan2(dy,dx);
+        float dirx = MathUtils.cos(angle);
+	    float diry = MathUtils.sin(angle);
+        /*vel.rotateDeg(180).scl(0.5f);
+        if(vel.len()<2){
+            vel.scl(2);
+        }*/
+    
+        vel.setAngleRad(angle);
+        float minV = 1;
+        if(vel.len()<minV){
+            vel.setLength(minV);
+        }
 
-        float xp = pos.x*obj.getPosition().x - pos.y*obj.getPosition().y;
+        float xp = pos.x*obj.getPosition().y - pos.y*obj.getPosition().x;
         angleVel = xp>0?3:-3;
 	    while(Intersector.overlapConvexPolygons(shape, obj.getShape())){
 	    	pos = pos.add(new Vector2(dirx*2, diry*2));
