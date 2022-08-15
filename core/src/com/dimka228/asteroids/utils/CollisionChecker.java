@@ -17,6 +17,18 @@ public class CollisionChecker {
             float x =vertices[i], y= vertices[i+1];
             if(Intersector.isPointInPolygon(p2.getTransformedVertices(), 0, p2.getTransformedVertices().length, x,y)){
                 p = new Vector2(x,y);
+                break;
+            }
+        }
+        if(p==null){
+            vertices = p2.getTransformedVertices();
+            count = vertices.length;
+            for(int i=0; i<count-1;i++){
+                float x = vertices[i], y= vertices[i+1];
+                if(Intersector.isPointInPolygon(p1.getTransformedVertices(), 0, p1.getTransformedVertices().length, x,y)){
+                    p = new Vector2(x,y);
+                    break;
+                }
             }
         }
         return p;
