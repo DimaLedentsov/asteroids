@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.PolygonBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -20,8 +21,11 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.dimka228.asteroids.Game;
 import com.dimka228.asteroids.logic.Forceable;
+import com.dimka228.asteroids.utils.CollisionChecker;
 import com.dimka228.asteroids.utils.Random;
 import com.dimka228.asteroids.utils.VectorUtils;
+
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
 
 public class Player extends GameObjectImpl implements Dieable, Forceable{
@@ -38,6 +42,7 @@ public class Player extends GameObjectImpl implements Dieable, Forceable{
         vel =  new Vector2(0,0);
         accel = new Vector2(0, 0);
         shape = new Polygon(new float[]{20,-10,0,50,-20,-10});
+        
         layer = 2;
         mass = 2;
         
@@ -85,14 +90,17 @@ public class Player extends GameObjectImpl implements Dieable, Forceable{
     }
     public void render(){
 
-        ShapeRenderer sb = game.getRenderer();
+        ShapeDrawer drawer = game.getDrawer();
+        PolygonBatch sb = game.getRenderer();
+        sb.begin();
         
-        sb.begin(ShapeRenderer.ShapeType.Line);
-        sb.setColor(Color.WHITE);
-        sb.polygon(shape.getTransformedVertices());
+        drawer.setColor(Color.WHITE);
+        drawer.polygon(shape.getTransformedVertices());
         Rectangle r = shape.getBoundingRectangle();
-        sb.setColor(Color.RED);
-        sb.rect(r.x, r.y, r.width, r.height);
+        drawer.setColor(Color.RED);
+        drawer.rectangle(r.x, r.y, r.width, r.height);
+        drawer.setColor(Color.GREEN);
+        drawer.circle(pos.x, pos.y, 5);
         sb.end();
     }
 
@@ -118,12 +126,29 @@ public class Player extends GameObjectImpl implements Dieable, Forceable{
             vel.setLength(minV);
         }
 
-        float xp = pos.x*obj.getPosition().y - pos.y*obj.getPosition().x;
+        Vector2 v = CollisionChecker.getCollusionPoint(shape, obj.getShape());
+        if(v==null) return;
+        /*Vector2 v1 = new Vector2(obj.getPosition().x-pos.x, obj.getPosition().y-pos.y);
+        Vector2 v2 = new Vector2(obj.getPosition().x-v.x, obj.getPosition().y-v.y);
+        float xp = v1.x*v2.y - v1.x*v2.y;
+*/
+
+        float xp = (obj.getPosition().x - pos.x)*(v.y - pos.y) - (v.x - pos.x)*(obj.getPosition().x - pos.y);
+        //float xp = pos.x*obj.getPosition().y - pos.y*obj.getPosition().x;
         angleVel = xp>0?3:-3;
-	    while(Intersector.overlapConvexPolygons(shape, obj.getShape())){
-	    	pos = pos.add(new Vector2(dirx*2, diry*2));
+        System.out.println(xp);
+        /*ShapeRenderer sb = game.getRenderer();
+        
+        sb.begin(ShapeRenderer.ShapeType.Line);
+        sb.setColor(Color.RED);
+        sb.circle(v.x, v.y, 10);
+        sb.line(pos, obj.getPosition());
+        sb.end();*/
+	    while(CollisionChecker.collides(shape, obj.getShape())){
+	    	pos = pos.add(new Vector2(dirx, diry));
             shape.setPosition(pos.x,pos.y);
 	    }
+        
 }
 
 

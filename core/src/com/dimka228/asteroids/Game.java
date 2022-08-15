@@ -15,10 +15,15 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
+import com.badlogic.gdx.graphics.g2d.PolygonBatch;
+import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
@@ -30,7 +35,10 @@ import com.dimka228.asteroids.objects.*;
 import com.dimka228.asteroids.objects.GameObject.Status;
 import com.dimka228.asteroids.objects.GameObject.Type;
 import com.dimka228.asteroids.utils.AnyShapeIntersector;
+import com.dimka228.asteroids.utils.CollisionChecker;
 import com.dimka228.asteroids.utils.Random;
+
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class Game extends ApplicationAdapter {
 	public final int WIDTH = 1000;
@@ -38,7 +46,8 @@ public class Game extends ApplicationAdapter {
 	public final int PLAYER_OFFSET = 100;
 	public final int GAP = 200;
 	public final String TITLE = "игра епта";
-	ShapeRenderer renderer;
+	PolygonBatch renderer;
+	ShapeDrawer shapeDrawer;
 	OrthographicCamera camera;
 	// Texture background;
 	// Sprite backgroundSprite;
@@ -74,7 +83,17 @@ public class Game extends ApplicationAdapter {
 		 * }
 		 * },1,3);
 		 */
-		renderer = new ShapeRenderer();
+		renderer = new PolygonSpriteBatch();
+		Pixmap pixmap = new Pixmap(1, 1, Format.RGBA8888);
+		pixmap.setColor(Color.WHITE);
+		pixmap.drawPixel(0, 0);
+		Texture texture = new Texture(pixmap); //remember to dispose of later
+		pixmap.dispose();
+		TextureRegion region = new TextureRegion(texture, 0, 0, 1, 1);
+		shapeDrawer = new ShapeDrawer(renderer,region);
+		shapeDrawer.setDefaultLineWidth(3);
+		shapeDrawer.setDefaultSnap(false);
+
 		objects = new LinkedList<>();
 		// backgroundObjects = new LinkedList<>();
 		
@@ -126,10 +145,10 @@ public class Game extends ApplicationAdapter {
 				return;
 			if (obj.getType() == Type.BACKGROUND)
 				return;
-			if (player != obj && Intersector.overlapConvexPolygons(obj.getShape(), player.getShape())) {
+			if (player != obj && CollisionChecker.collides(obj.getShape(), player.getShape())) {
 				player.collide(obj);
 				obj.collide(player);
-				System.out.println("player collides obj");
+				//System.out.println("player collides obj");
 			}
 		});
 		/*
@@ -162,10 +181,13 @@ public class Game extends ApplicationAdapter {
 
 	}
 
-	public ShapeRenderer getRenderer() {
+	public PolygonBatch getRenderer() {
 		return renderer;
 	}
 
+	public ShapeDrawer getDrawer(){
+		return shapeDrawer;
+	}
 	public Camera getCamera() {
 		return camera;
 	}

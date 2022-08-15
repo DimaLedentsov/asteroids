@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.PolygonBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -18,6 +19,8 @@ import com.badlogic.gdx.physics.box2d.Box2D;
 import com.dimka228.asteroids.Game;
 import com.dimka228.asteroids.logic.Forceable;
 import com.dimka228.asteroids.utils.VectorUtils;
+
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
 
 public class Asteroid extends GameObjectImpl implements Dieable, Forceable{
@@ -33,7 +36,25 @@ public class Asteroid extends GameObjectImpl implements Dieable, Forceable{
         pos = new Vector2(400,400);
         vel =  new Vector2(0,0);
         accel = new Vector2(0, 0);
-        shape = new Polygon(new float[]{20,-10,0,50,-20,-10});
+        shape = new Polygon(new float[]{203.000f,11.000f,
+            136,73.000f,
+            -20,20.000f,
+            -20,-20.000f,
+            144,-81.000f
+            });
+        shape = new Polygon(new float[]{
+            103.99f,11.000f ,
+            36.992f,73.000f ,
+            -119.008f,20.000f ,
+            -119.008f,-20.000f,
+            44.992f,-81.000f  
+           
+        });
+            shape.setOrigin(100, 27);
+            shape.setPosition(pos.x,pos.y);
+        
+        //shape.setOrigin(shape.getBoundingRectangle().getWidth()/2,shape.getBoundingRectangle().getHeight()/2);
+        
         layer = 2;
         mass = 2;
         
@@ -47,14 +68,18 @@ public class Asteroid extends GameObjectImpl implements Dieable, Forceable{
         
     }
     public void render(){
-
-        ShapeRenderer sb = game.getRenderer();
-        sb.begin(ShapeRenderer.ShapeType.Line);
-        sb.setColor(Color.WHITE);
-        sb.polygon(shape.getTransformedVertices());
+        ShapeDrawer drawer = game.getDrawer();
+        PolygonBatch sb = game.getRenderer();
+        sb.begin();
+        
+        drawer.setColor(Color.WHITE);
+        
+        drawer.polygon(shape.getTransformedVertices());
         Rectangle r = shape.getBoundingRectangle();
-        sb.setColor(Color.RED);
-        sb.rect(r.x, r.y, r.width, r.height);
+        drawer.setColor(Color.RED);
+        drawer.rectangle(r.x, r.y, r.width, r.height);
+        drawer.setColor(Color.GREEN);
+        drawer.circle(pos.x, pos.y, 5);
         sb.end();
     }
 
