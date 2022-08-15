@@ -93,7 +93,6 @@ public class Game extends ApplicationAdapter {
 		shapeDrawer = new ShapeDrawer(renderer,region);
 		shapeDrawer.setDefaultLineWidth(3);
 		shapeDrawer.setDefaultSnap(false);
-
 		objects = new LinkedList<>();
 		// backgroundObjects = new LinkedList<>();
 		
