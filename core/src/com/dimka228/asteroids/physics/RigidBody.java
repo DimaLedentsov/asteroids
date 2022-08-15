@@ -13,12 +13,19 @@ public final class RigidBody {
     private float mass;
     public void update(){
         velocity.add(acceleration);
+        velocity.limit(5);
         angle += rotation;
         position.add(velocity);
+        shape.setPosition(position.x, position.y);
+        shape.setRotation(angle);
     }
 
-    public RigidBody(Polygon shape, Vector2 velocity, Vector2 acceleration, float angle, Vector2 position, float rotation, float mass) {
-        this.shape = shape;
+    public void updateAngle(){
+        angle+=rotation;
+    }
+
+    public RigidBody(float[] vertices, Vector2 velocity, Vector2 acceleration, float angle, Vector2 position, float rotation, float mass) {
+        this.shape = new Polygon(vertices);
         this.velocity = velocity;
         this.acceleration = acceleration;
         this.angle = angle;

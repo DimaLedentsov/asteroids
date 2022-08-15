@@ -48,7 +48,6 @@ public class Game extends ApplicationAdapter {
 	public final String TITLE = "игра епта";
 	PolygonBatch renderer;
 	ShapeDrawer shapeDrawer;
-	OrthographicCamera camera;
 	// Texture background;
 	// Sprite backgroundSprite;
 
@@ -92,14 +91,14 @@ public class Game extends ApplicationAdapter {
 		TextureRegion region = new TextureRegion(texture, 0, 0, 1, 1);
 		shapeDrawer = new ShapeDrawer(renderer,region);
 		shapeDrawer.setDefaultLineWidth(3);
-		shapeDrawer.setDefaultSnap(false);
+
 		objects = new LinkedList<>();
 		// backgroundObjects = new LinkedList<>();
 		
 
-		camera = new OrthographicCamera();
+		/*camera = new OrthographicCamera();
 		camera.setToOrtho(false, WIDTH, HEIGHT);
-
+			*/
 		player = new Player(this);
 
 		// objects.add(new Wall(this));
@@ -144,7 +143,7 @@ public class Game extends ApplicationAdapter {
 				return;
 			if (obj.getType() == Type.BACKGROUND)
 				return;
-			if (player != obj && CollisionChecker.collides(obj.getShape(), player.getShape())) {
+			if (player != obj && CollisionChecker.collides(obj.getBody().getShape(), player.getBody().getShape())) {
 				player.collide(obj);
 				obj.collide(player);
 				//System.out.println("player collides obj");
@@ -187,16 +186,16 @@ public class Game extends ApplicationAdapter {
 	public ShapeDrawer getDrawer(){
 		return shapeDrawer;
 	}
-	public Camera getCamera() {
+	/*public Camera getCamera() {
 		return camera;
-	}
+	}*/
 
 	public Player getPlayer() {
 		return player;
 	}
 
 	public float getLeftBoarder() {
-		return player.getPosition().x - PLAYER_OFFSET;
+		return player.getBody().getPosition().x - PLAYER_OFFSET;
 	}
 
 	public Deque<GameObject> getObjects() {
