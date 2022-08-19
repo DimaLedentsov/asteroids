@@ -31,11 +31,13 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.dimka228.asteroids.objects.*;
 import com.dimka228.asteroids.objects.GameObject.Status;
 import com.dimka228.asteroids.objects.GameObject.Type;
 import com.dimka228.asteroids.utils.AnyShapeIntersector;
-import com.dimka228.asteroids.utils.CollisionChecker;
+import com.dimka228.asteroids.utils.CollisionUtils;
 import com.dimka228.asteroids.utils.Random;
 
 import space.earlygrey.shapedrawer.ShapeDrawer;
@@ -43,11 +45,16 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 public class Game extends ApplicationAdapter {
 	public final int WIDTH = 1000;
 	public final int HEIGHT = 800;
+	public final int WORLD_WIDTH = 3000;
+	public final int WORLD_HEIGHT = 1000;
 	public final int PLAYER_OFFSET = 100;
 	public final int GAP = 200;
 	public final String TITLE = "игра епта";
+
 	PolygonBatch renderer;
 	ShapeDrawer shapeDrawer;
+	
+	Viewport viewport;
 	// Texture background;
 	// Sprite backgroundSprite;
 
@@ -56,6 +63,21 @@ public class Game extends ApplicationAdapter {
 	private Player player;
 	private volatile long count;
 	private boolean isRunning;
+
+	private OrthographicCamera camera;
+
+
+	class World {
+		public final float width;
+		public final float height;
+		public World(float w, float h){
+			width = w;
+			height = h;
+		}
+		private Deque<GameObject> objects;
+		
+	}
+	
 
 	public long getTick() {
 		return count;
@@ -72,16 +94,7 @@ public class Game extends ApplicationAdapter {
 	@Override
 	public void create() {
 		isRunning = true;
-		/*
-		 * Timer timer=new Timer();
-		 * timer.scheduleTask(new Timer.Task() {
-		 * 
-		 * @Override
-		 * public void run() {
-		 * objects.add(new Wall(Game.this,HEIGHT-300, HEIGHT));
-		 * }
-		 * },1,3);
-		 */
+
 		renderer = new PolygonSpriteBatch();
 		Pixmap pixmap = new Pixmap(1, 1, Format.RGBA8888);
 		pixmap.setColor(Color.WHITE);
@@ -96,9 +109,13 @@ public class Game extends ApplicationAdapter {
 		// backgroundObjects = new LinkedList<>();
 		
 
-		/*camera = new OrthographicCamera();
-		camera.setToOrtho(false, WIDTH, HEIGHT);
-			*/
+		camera = new OrthographicCamera();
+		camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+		viewport = new ExtendViewport(WIDTH,HEIGHT,camera);
+		viewport.apply();
+
+	
 		player = new Player(this);
 
 		// objects.add(new Wall(this));
@@ -106,6 +123,12 @@ public class Game extends ApplicationAdapter {
 		objects.add(player);
 		objects.add(new Asteroid(this));
 	}
+
+	@Override
+   	public void resize(int width, int height){
+    	viewport.update(width, height);
+    	camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
+   	}
 
 	public void updateBackground() {
 
@@ -116,39 +139,38 @@ public class Game extends ApplicationAdapter {
 
 		ScreenUtils.clear(0, 0, 0, 0);
 
-		// camera.position.set(player.getPosition().x+WIDTH/2,HEIGHT/2, 0);
-		/*camera.position.set(player.getPosition().x + camera.viewportWidth / 2,
-				camera.viewportHeight / 2, 0);
+		camera.position.set(player.getBody().getPosition().x, player.getBody().getPosition().y, 0);
 		camera.update();
-*/
+
+		renderer.setProjectionMatrix(camera.combined);
+
 		if (Gdx.input.isKeyJustPressed(Input.Keys.P))
 			isRunning = !isRunning;
-	/*/
-		if (count % 110 == 0 && isRunning) {
-			float x = Random.between(GAP, HEIGHT - GAP);
-			objects.add(new Wall(Game.this, HEIGHT, x));
-			objects.add(new Wall(Game.this, x - GAP, 0));
-		}
-		*/
-		//renderer.setProjectionMatrix(camera.combined);
+	
 
+		renderer.begin();
+		shapeDrawer.rectangle(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 		objects.removeIf((o) -> o.getStatus() == Status.DEAD);
 
 		objects.stream().sorted(new GameObject.SortingComparator()).forEachOrdered((obj) -> {
 			
 			if (isRunning || obj.getType() == Type.BACKGROUND)
 				obj.update();
+
 			obj.render();
+		
 			if (!isRunning)
 				return;
 			if (obj.getType() == Type.BACKGROUND)
 				return;
-			if (player != obj && CollisionChecker.collides(obj.getBody().getShape(), player.getBody().getShape())) {
+			if (player != obj && CollisionUtils.collides(obj.getBody().getShape(), player.getBody().getShape())) {
 				player.collide(obj);
 				obj.collide(player);
 				//System.out.println("player collides obj");
 			}
 		});
+
+		renderer.end();
 		/*
 		 * while (iterator.hasNext()) {
 		 * GameObject obj = iterator.next();
@@ -186,9 +208,9 @@ public class Game extends ApplicationAdapter {
 	public ShapeDrawer getDrawer(){
 		return shapeDrawer;
 	}
-	/*public Camera getCamera() {
+	public Camera getCamera() {
 		return camera;
-	}*/
+	}
 
 	public Player getPlayer() {
 		return player;

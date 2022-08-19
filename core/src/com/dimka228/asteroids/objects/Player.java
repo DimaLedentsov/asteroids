@@ -22,7 +22,7 @@ import com.badlogic.gdx.physics.box2d.Box2D;
 import com.dimka228.asteroids.Game;
 import com.dimka228.asteroids.logic.Forceable;
 import com.dimka228.asteroids.physics.RigidBody;
-import com.dimka228.asteroids.utils.CollisionChecker;
+import com.dimka228.asteroids.utils.CollisionUtils;
 import com.dimka228.asteroids.utils.Random;
 import com.dimka228.asteroids.utils.VectorUtils;
 
@@ -83,7 +83,7 @@ public class Player extends GameObjectImpl implements Dieable{
 
         ShapeDrawer drawer = game.getDrawer();
         PolygonBatch sb = game.getRenderer();
-        sb.begin();
+    
         
         drawer.setColor(Color.WHITE);
         drawer.polygon(body.getShape().getTransformedVertices());
@@ -92,7 +92,7 @@ public class Player extends GameObjectImpl implements Dieable{
         drawer.rectangle(r.x, r.y, r.width, r.height);
         drawer.setColor(Color.GREEN);
         drawer.circle(body.getPosition().x, body.getPosition().y, 5);
-        sb.end();
+
     }
 
     public void collide(Collideable obj){
@@ -119,7 +119,7 @@ public class Player extends GameObjectImpl implements Dieable{
             vel.setLength(minV);
         }
 
-        Vector2 v = CollisionChecker.getCollusionPoint(body.getShape(), obj.getBody().getShape());
+        Vector2 v = CollisionUtils.getCollusionPoint(body.getShape(), obj.getBody().getShape());
         if(v==null) return;
         /*Vector2 v1 = new Vector2(obj.getPosition().x-pos.x, obj.getPosition().y-pos.y);
         Vector2 v2 = new Vector2(obj.getPosition().x-v.x, obj.getPosition().y-v.y);
@@ -137,7 +137,7 @@ public class Player extends GameObjectImpl implements Dieable{
         sb.circle(v.x, v.y, 10);
         sb.line(pos, obj.getPosition());
         sb.end();*/
-	    while(CollisionChecker.collides(body.getShape(), obj.getBody().getShape())){
+	    while(CollisionUtils.collides(body.getShape(), obj.getBody().getShape())){
 	    	Vector2 np = body.getPosition().add(new Vector2(dirx, diry));
             body.setPosition(np);
 	    }

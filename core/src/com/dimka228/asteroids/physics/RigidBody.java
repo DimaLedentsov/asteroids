@@ -2,8 +2,10 @@ package com.dimka228.asteroids.physics;
 
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
+import com.dimka228.asteroids.logic.Forceable;
+import com.dimka228.asteroids.objects.Updateable;
 
-public final class RigidBody {
+public final class RigidBody implements Forceable, Updateable{
     private Polygon shape;
     private Vector2 velocity;
     private Vector2 acceleration;
@@ -11,6 +13,7 @@ public final class RigidBody {
     private Vector2 position;
     private float rotation;
     private float mass;
+    private Type type;
     public void update(){
         velocity.add(acceleration);
         velocity.limit(5);
@@ -32,6 +35,7 @@ public final class RigidBody {
         this.position = position;
         this.rotation = rotation;
         this.mass = mass;
+        this.type = Type.DYNAMIC;
     }
 
     public Polygon getShape() {
@@ -74,6 +78,10 @@ public final class RigidBody {
         this.position = position;
         shape.setPosition(position.x, position.y);
     }
+    public void addPosition(Vector2 d){
+        position.add(d);
+        shape.setPosition(position.x, position.y);
+    }
 
     public float getRotation() {
         return this.rotation;
@@ -94,6 +102,19 @@ public final class RigidBody {
 
     public void applyForce(Vector2 f){
         acceleration.set(f.scl(mass));
+    }
+
+    public enum Type{
+        STATIC,
+        DYNAMIC,
+        GHOST
+    }
+
+    public Type getType(){
+        return type;
+    }
+    public void setType(Type t){
+        type = t;
     }
 
 
