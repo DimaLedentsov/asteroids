@@ -48,8 +48,7 @@ public class Asteroid extends GameObjectImpl implements Dieable{
     }
     public void render(){
         ShapeDrawer drawer = game.getDrawer();
-        PolygonBatch sb = game.getRenderer();
-        sb.begin();
+  
         
         drawer.setColor(Color.WHITE);
         
@@ -59,7 +58,7 @@ public class Asteroid extends GameObjectImpl implements Dieable{
         drawer.rectangle(r.x, r.y, r.width, r.height);
         drawer.setColor(Color.GREEN);
         drawer.circle(body.getPosition().x, body.getPosition().y, 5);
-        sb.end();
+  
     }
 
     public void collide(Collideable obj){
