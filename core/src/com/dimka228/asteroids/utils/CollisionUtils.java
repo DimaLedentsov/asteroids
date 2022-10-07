@@ -37,40 +37,4 @@ public class CollisionUtils {
         return p;
     }
 
-    public static void processCollusion(RigidBody b1, RigidBody b2){
-        
-	    float dx = b1.getPosition().x - b2.getPosition().x;
-	    float dy = b1.getPosition().y - b2.getPosition().y;///////////////
-        
-	    /*float angle = (float) Math.atan2((double)dy,(double)dx);
-	    float dirx = (float)Math.cos(angle);
-	    float diry = (float)Math.sin(angle);*/
-        float angle = MathUtils.atan2(dy,dx);
-        float dirx = MathUtils.cos(angle);
-	    float diry = MathUtils.sin(angle);
-        /*vel.rotateDeg(180).scl(0.5f);
-        if(vel.len()<2){
-            vel.scl(2);
-        }*/
-    
-        Vector2 impulse1 = b1.getVelocity().scl(b1.getMass()),
-                impulse2 = b2.getVelocity().scl(b2.getMass());
-        
-
-
-        Vector2 v = CollisionUtils.getCollusionPoint(b1.getShape(), b2.getShape());
-        if(v==null) return;
-
-        float xp = (b2.getPosition().x - b1.getPosition().x)*(v.y - b1.getPosition().y) - (v.x - b1.getPosition().x)*(b2.getPosition().x - b1.getPosition().y);
-
-        float rot = 3;
-        if(b1.getType()==Type.DYNAMIC) b1.setRotation(xp>0?rot:-rot);
-        if(b2.getType()==Type.DYNAMIC) b2.setRotation(xp>0?-rot:rot);
-
-        
-	    while(CollisionUtils.collides(b1.getShape(), b2.getShape())){
-	    	b1.addPosition(new Vector2(dirx, diry));
-            b2.addPosition(new Vector2(-dirx, -diry));
-	    }
-    }
 }

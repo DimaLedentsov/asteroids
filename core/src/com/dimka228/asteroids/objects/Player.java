@@ -4,7 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
+
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PolygonBatch;
@@ -18,7 +18,6 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Shape2D;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Box2D;
 import com.dimka228.asteroids.Game;
 import com.dimka228.asteroids.logic.Forceable;
 import com.dimka228.asteroids.physics.RigidBody;
@@ -66,17 +65,17 @@ public class Player extends GameObjectImpl implements Dieable{
             body.setAcceleration(new Vector2());
         }
         if(Gdx.input.isKeyPressed(Input.Keys.D)){
-            body.setRotation(-3f);
-            body.updateAngle();
-            body.setRotation(0);       
+            body.rotate(-3f);
+            body.setRotation(0);
         } else if(Gdx.input.isKeyPressed(Input.Keys.A)){
-            body.setRotation(3f);
-            body.updateAngle();
-            body.setRotation(0);    
+            body.rotate(3f); 
+            body.setRotation(0);
         }
+        
 
         //if(Gdx.input.isKeyPressed(Input.Keys.W)||Gdx.input.isKeyPressed(Input.Keys.S)) angleVel = 0;
         body.update();
+        body.setRotationAcceleration(0);
         
     }
     public void render(){
@@ -97,50 +96,6 @@ public class Player extends GameObjectImpl implements Dieable{
 
     public void collide(Collideable obj){
     
-	    float dx = body.getPosition().x - obj.getBody().getPosition().x;
-	    float dy = body.getPosition().y - obj.getBody().getPosition().y;///////////////
-        
-	    /*float angle = (float) Math.atan2((double)dy,(double)dx);
-	    float dirx = (float)Math.cos(angle);
-	    float diry = (float)Math.sin(angle);*/
-        float angle = MathUtils.atan2(dy,dx);
-        float dirx = MathUtils.cos(angle);
-	    float diry = MathUtils.sin(angle);
-        /*vel.rotateDeg(180).scl(0.5f);
-        if(vel.len()<2){
-            vel.scl(2);
-        }*/
-    
-        
-        final Vector2 vel = body.getVelocity();
-        vel.setAngleRad(angle);
-        float minV = 1;
-        if(vel.len()<minV){
-            vel.setLength(minV);
-        }
-
-        Vector2 v = CollisionUtils.getCollusionPoint(body.getShape(), obj.getBody().getShape());
-        if(v==null) return;
-        /*Vector2 v1 = new Vector2(obj.getPosition().x-pos.x, obj.getPosition().y-pos.y);
-        Vector2 v2 = new Vector2(obj.getPosition().x-v.x, obj.getPosition().y-v.y);
-        float xp = v1.x*v2.y - v1.x*v2.y;
-*/
-
-        float xp = (obj.getBody().getPosition().x - body.getPosition().x)*(v.y - body.getPosition().y) - (v.x - body.getPosition().x)*(obj.getBody().getPosition().x - body.getPosition().y);
-        //float xp = pos.x*obj.getPosition().y - pos.y*obj.getPosition().x;
-        body.setRotation(xp>0?3:-3);
-        System.out.println(xp);
-        /*ShapeRenderer sb = game.getRenderer();
-        
-        sb.begin(ShapeRenderer.ShapeType.Line);
-        sb.setColor(Color.RED);
-        sb.circle(v.x, v.y, 10);
-        sb.line(pos, obj.getPosition());
-        sb.end();*/
-	    while(CollisionUtils.collides(body.getShape(), obj.getBody().getShape())){
-	    	Vector2 np = body.getPosition().add(new Vector2(dirx, diry));
-            body.setPosition(np);
-	    }
         
     }
 

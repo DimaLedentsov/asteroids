@@ -1,9 +1,11 @@
 package com.dimka228.asteroids;
 
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -27,7 +29,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.Timer;
@@ -39,6 +43,9 @@ import com.dimka228.asteroids.objects.GameObject.Type;
 import com.dimka228.asteroids.utils.AnyShapeIntersector;
 import com.dimka228.asteroids.utils.CollisionUtils;
 import com.dimka228.asteroids.utils.Random;
+import com.dimka228.asteroids.physics.RigidBody;
+import com.dimka228.asteroids.physics.collusion.*;
+import static com.dimka228.asteroids.utils.VectorUtils.*;
 
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
@@ -59,7 +66,9 @@ public class Game extends ApplicationAdapter {
 	// Sprite backgroundSprite;
 
 	volatile float x = 10;
-	private Deque<GameObject> objects;
+	float elasticity = 1;
+
+	private LinkedList<GameObject> objects;
 	private Player player;
 	private volatile long count;
 	private boolean isRunning;
@@ -74,7 +83,7 @@ public class Game extends ApplicationAdapter {
 			width = w;
 			height = h;
 		}
-		private Deque<GameObject> objects;
+		private List<GameObject> objects;
 		
 	}
 	
@@ -120,8 +129,9 @@ public class Game extends ApplicationAdapter {
 
 		// objects.add(new Wall(this));
 		// background = new Background(this,WIDTH);
-		objects.add(player);
+		
 		objects.add(new Asteroid(this));
+		objects.add(player);
 	}
 
 	@Override
@@ -152,7 +162,7 @@ public class Game extends ApplicationAdapter {
 		shapeDrawer.rectangle(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 		objects.removeIf((o) -> o.getStatus() == Status.DEAD);
 
-		objects.stream().sorted(new GameObject.SortingComparator()).forEachOrdered((obj) -> {
+		/*objects.stream().sorted(new GameObject.SortingComparator()).forEachOrdered((obj) -> {
 			
 			if (isRunning || obj.getType() == Type.BACKGROUND)
 				obj.update();
@@ -164,11 +174,99 @@ public class Game extends ApplicationAdapter {
 			if (obj.getType() == Type.BACKGROUND)
 				return;
 			if (player != obj && CollisionUtils.collides(obj.getBody().getShape(), player.getBody().getShape())) {
+	
 				player.collide(obj);
 				obj.collide(player);
+				//CollisionUtils.processCollusion(player.getBody(), obj.getBody());
 				//System.out.println("player collides obj");
 			}
-		});
+		});*/
+		for(int i = 0; i < objects.size(); i++){
+			objects.get(i).update();
+			objects.get(i).render();
+			for(int j = i+1; j < objects.size(); j++){
+			  GJK2D gjk = new GJK2D(objects.get(i).getBody(), objects.get(j).getBody());
+			  Vector2 penetration = gjk.intersect();
+			  
+			  boolean collided = gjk.collided;
+			  System.out.println(collided);
+			  if(collided){
+				Vector2 contact = gjk.getContactPoint(penetration);
+				if(contact != null){
+				
+				  //pushMatrix();
+				  //translate(width/2, height/2);
+				  //penetration.display();
+				  //popMatrix();
+				  
+				  
+				  
+				  RigidBody A = objects.get(i).getBody();
+				  RigidBody B = objects.get(j).getBody();
+				  
+				  // https://sidvind.com/wiki/2D-Collision_response
+				  /*if(collisionRespone.equals("linear")){
+					Vector velAB = sub(B.vel, A.vel);
+					//Vector normal = normalize(new Vector(-penetration.y, penetration.x));
+					Vector normal = normalize(penetration);
+					
+					Vector a = sub(velAB.neg(), mult(velAB, elasticity));
+					float jnumerator = dot(a, normal);
+					
+					float b = dot(normal, normal);
+					float jdenominator = (b/A.mass) + (b/B.mass);
+					
+					float J = jnumerator / jdenominator;
+					
+					if(A.movable) A.vel.sub(mult(normal, J/A.mass));
+					if(B.movable) B.vel.add(mult(normal, J/B.mass));
+					
+				  }else if(collisionRespone.equals("rotation"))*/{
+					Vector2 velAB = sub(B.getVelocity(), A.getVelocity());
+					Vector2 normal = normalize(penetration);
+					// Vector pointing from the center to the contact
+					Vector2 rap = sub(contact, A.getPosition());
+					Vector2 rbp = sub(contact, B.getPosition());
+					
+					Vector2 a = sub(neg(velAB), mult(velAB, elasticity));
+					float jnumerator = dot(a, normal);
+					
+					float b = dot(normal, normal);
+					float jdenominator1 = (b/A.getMass()) + (b/B.getMass());
+					
+					// (a x b)^2 = (a x b) dot (a x b) = (a x b) x a dot b
+					
+					float ca = (float)Math.pow(dot(rap, normal), 2) / A.getMass();
+					float cb = (float)Math.pow(dot(rbp, normal), 2) / B.getMass();
+					
+					float jdenominator = jdenominator1 + ca + cb;
+					
+					float J = jnumerator/jdenominator;
+					
+					// Move linear
+					A.getVelocity().sub(mult(normal, J/A.getMass()));
+					B.getVelocity().add(mult(normal, J/B.getMass()));
+					
+					// Rotate
+					A.setRotation(A.getRotation()- cross(rap, mult(normal, J)) / A.getMass());
+					B.setRotation(B.getRotation()+ cross(rbp, mult(normal, J)) / A.getMass());
+				  }
+				  
+				A.getPosition().sub(div(penetration, 2));
+				B.getPosition().add(div(penetration, 2));
+				  
+				}
+			  }
+			  
+			  if(collided){
+				gjk.bodyA.overlapping = true;
+				gjk.bodyB.overlapping = true;
+			  }else{
+				gjk.bodyA.overlapping |= false;
+				gjk.bodyB.overlapping |= false;
+			  }
+			}
+		  }
 
 		renderer.end();
 		/*
