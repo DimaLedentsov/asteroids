@@ -7,11 +7,11 @@ import com.dimka228.asteroids.Game;
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 public class DesktopLauncher {
 	public static void main (String[] arg) {
-		Game game = new Game();
+		Game game = Game.getInstance();
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setForegroundFPS(60);
 		config.setTitle(game.TITLE);
-		config.setWindowedMode(game.WIDTH, game.HEIGHT);
+		config.setWindowedMode(game.SCREEN_WIDTH, game.SCREEN_HEIGHT);
 		new Lwjgl3Application(game, config);
 	}
 }

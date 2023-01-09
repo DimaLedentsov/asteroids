@@ -18,94 +18,88 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Shape2D;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.dimka228.asteroids.Game;
 import com.dimka228.asteroids.logic.Forceable;
-import com.dimka228.asteroids.physics.RigidBody;
-import com.dimka228.asteroids.utils.CollisionUtils;
+import com.dimka228.asteroids.objects.interfaces.GameObject;
+import com.dimka228.asteroids.objects.interfaces.Ship;
+import com.dimka228.asteroids.objects.interfaces.Shootable;
+import com.dimka228.asteroids.objects.particles.ThrustParticle;
+import com.dimka228.asteroids.physics.BodyCategories;
 import com.dimka228.asteroids.utils.Random;
 import com.dimka228.asteroids.utils.VectorUtils;
 
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 
-public class Player extends GameObjectImpl implements Dieable{
-    public Player(Game game) {
+public class Player extends AbstractPlayer{
+
+
+    public Player(float x, float y) {
+ 
         // super(coords, velocity, accel, texture, type)
-        super(game,
-                Type.PLAYER);
-        body = new RigidBody(new float[]{20,-10,0,50,-20,-10},
-            new Vector2(), 
-            new Vector2(), 
-            0, 
-            new Vector2(100, 100),
-            0, 
-        2);
-        
-        layer = 2;
+        super(x,y);
+        color = Color.ORANGE.cpy();
+        hp = 1;
         
     }
     public void update(){
-        if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
-
-        }
+        super.update();
         if(Gdx.input.isKeyPressed(Input.Keys.W)){
-            float mod = 0.05f;
-            
-            Vector2 force = new Vector2(Vector2.Y).scl(mod);//VectorUtils.fromAngle(angle, mod);
-            //System.out.println(angle);
-            force.rotateDeg(body.getAngle());
-            //System.out.println(force.angleDeg());
-            body.applyForce(force);
+            thrust();
         }
         else if(Gdx.input.isKeyPressed(Input.Keys.S)){
             
         }
        
         else{
-            body.setAcceleration(new Vector2());
-        }
-        if(Gdx.input.isKeyPressed(Input.Keys.D)){
-            body.rotate(-3f);
-            body.setRotation(0);
-        } else if(Gdx.input.isKeyPressed(Input.Keys.A)){
-            body.rotate(3f); 
-            body.setRotation(0);
+            //body.setAcceleration(new Vector2());
         }
         
+        if(Gdx.input.isKeyPressed(Input.Keys.D)){
+            //body.rotate(-3f);
+            //body.setRotation(0);
+            rotateLeft();//body.setTransform(body.getPosition(), body.getAngle()-0.1f);
+        } else if(Gdx.input.isKeyPressed(Input.Keys.A)){
+            //body.rotate(3f); 
+            //body.setRotation(0);
+            rotateRight();//body.setTransform(body.getPosition(), body.getAngle()+0.1f);
+        } else {
+            stopRotation();
+        }
+
+    
+        /*if(Gdx.input.isKeyPressed(Input.Keys.D)){
+            //body.rotate(-3f);
+            //body.setRotation(0);
+            if(!isRotating) {
+                body.setAngularVelocity(-0.1f);//body.setTransform(body.getPosition(), body.getAngle()-0.1f);
+                isRotating=true;
+            }
+        } else if(Gdx.input.isKeyPressed(Input.Keys.A)){
+            //body.rotate(3f); 
+            //body.setRotation(0);
+            if(!isRotating) {
+                body.setAngularVelocity(0.1f);//body.setTransform(body.getPosition(), body.getAngle()+0.1f);
+                isRotating=true;
+            }
+        } else {
+            if(isRotating) body.setAngularVelocity(0);
+            isRotating = false;
+        }*/
+
+        if(Gdx.input.isKeyPressed(Input.Keys.SPACE)){
+            shootForward();
+        }
 
         //if(Gdx.input.isKeyPressed(Input.Keys.W)||Gdx.input.isKeyPressed(Input.Keys.S)) angleVel = 0;
-        body.update();
-        body.setRotationAcceleration(0);
+        //body.update();
+        //body.setRotationAcceleration(0);
         
     }
-    public void render(){
-
-        ShapeDrawer drawer = game.getDrawer();
-        PolygonBatch sb = game.getRenderer();
     
-        
-        drawer.setColor(Color.WHITE);
-        drawer.polygon(body.getShape().getTransformedVertices());
-        Rectangle r = body.getShape().getBoundingRectangle();
-        drawer.setColor(Color.RED);
-        drawer.rectangle(r.x, r.y, r.width, r.height);
-        drawer.setColor(Color.GREEN);
-        drawer.circle(body.getPosition().x, body.getPosition().y, 5);
 
-    }
-
-    public void collide(Collideable obj){
-    
-        
-    }
-
-
-    public void die(){
-        setStatus(Status.DYING);
-        
-    }
-
-
-
-    
 }

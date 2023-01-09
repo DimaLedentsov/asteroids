@@ -1,4 +1,4 @@
-package com.dimka228.asteroids.objects;
+package com.dimka228.asteroids.objects.interfaces;
 
 import com.badlogic.gdx.math.Shape2D;
 

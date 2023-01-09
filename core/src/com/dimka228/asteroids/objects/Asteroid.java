@@ -11,63 +11,74 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Shape2D;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.MassData;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.dimka228.asteroids.Game;
 import com.dimka228.asteroids.logic.Forceable;
-import com.dimka228.asteroids.physics.RigidBody;
+import com.dimka228.asteroids.objects.interfaces.Dieable;
+import com.dimka228.asteroids.objects.interfaces.GameObject;
+import com.dimka228.asteroids.physics.BodyCategories;
+import com.dimka228.asteroids.utils.PolygonUtils;
 import com.dimka228.asteroids.utils.VectorUtils;
 
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 
 public class Asteroid extends GameObjectImpl implements Dieable{
-    public Asteroid(Game game) {
-        // super(coords, velocity, accel, texture, type)
-        super(game,
-                Type.ENEMY);
-        body = new RigidBody(new float[]{
-            103.99f,11.000f ,
-            36.992f,73.000f ,
-            -119.008f,20.000f ,
-            -119.008f,-20.000f,
-            44.992f,-81.000f  
-           
-        }, new Vector2(), new Vector2(), 0, new Vector2(400,400), 0.1f, 20);
+    void init(){
+        BodyDef def = new BodyDef();
+        def.type = BodyType.DynamicBody;
+        
+        body = Game.getInstance().getWorld().createBody(def);
+        PolygonShape poly = new PolygonShape();
 
-        layer = 2;        
+        poly.set(PolygonUtils.generate(6, 3));;
+        FixtureDef fix = new FixtureDef();
+        fix.filter.categoryBits= BodyCategories.SCENERY;
+        fix.filter.maskBits=BodyCategories.SCENERY;
+        fix.shape=poly;
+        fix.density=0.1f;
+
+        body.createFixture(fix);
+        poly.dispose(); 
+    
+        body.setUserData(this);
+        layer = 2;   
+
+        
     }
+    public Asteroid(float x, float y){
+        super( Type.OBSTACLE);
+        init();
+        body.setTransform(x, y, 0);
+    }
+
     public void update(){
        
-        System.out.println(body.getVelocity().toString());
-        body.update();
+        
+        //body.update();
         
     }
-    public void render(){
-        ShapeDrawer drawer = game.getDrawer();
-  
-        
-        drawer.setColor(Color.WHITE);
-        
-        drawer.polygon(body.getShape().getTransformedVertices());
-        Rectangle r = body.getShape().getBoundingRectangle();
-        drawer.setColor(Color.RED);
-        drawer.rectangle(r.x, r.y, r.width, r.height);
-        drawer.setColor(Color.GREEN);
-        drawer.circle(body.getPosition().x, body.getPosition().y, 5);
-  
-    }
-
-    public void collide(Collideable obj){
+    
+    public void collide(GameObject obj){
         die();
     }
+
 
     public void die(){
         setStatus(Status.DYING);
         
     }
+
+    
     
 
     

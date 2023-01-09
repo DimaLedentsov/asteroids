@@ -38,25 +38,40 @@ import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.dimka228.asteroids.objects.*;
-import com.dimka228.asteroids.objects.GameObject.Status;
-import com.dimka228.asteroids.objects.GameObject.Type;
+import com.dimka228.asteroids.objects.interfaces.GameObject;
+import com.dimka228.asteroids.objects.interfaces.GameObject.Status;
+import com.dimka228.asteroids.objects.interfaces.GameObject.Type;
+import com.dimka228.asteroids.objects.particles.ExplosionParticle;
+import com.dimka228.asteroids.objects.particles.ThrustParticle;
+import com.dimka228.asteroids.physics.CollusionListener;
 import com.dimka228.asteroids.utils.AnyShapeIntersector;
-import com.dimka228.asteroids.utils.CollisionUtils;
-import com.dimka228.asteroids.utils.Random;
-import com.dimka228.asteroids.physics.RigidBody;
-import com.dimka228.asteroids.physics.collusion.*;
-import static com.dimka228.asteroids.utils.VectorUtils.*;
 
+import com.dimka228.asteroids.utils.Random;
+
+import static com.dimka228.asteroids.utils.VectorUtils.*;
+import com.badlogic.gdx.physics.box2d.*;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class Game extends ApplicationAdapter {
-	public final int WIDTH = 1000;
-	public final int HEIGHT = 800;
-	public final int WORLD_WIDTH = 3000;
-	public final int WORLD_HEIGHT = 1000;
+	public static final int SCREEN_WIDTH = 1000;
+	public static final int SCREEN_HEIGHT = 800;
+	public static final int WORLD_WIDTH = 500;
+	public static final int WORLD_HEIGHT = 300;
+
+	public static final float WORLD_TO_VIEW = SCREEN_WIDTH / WORLD_WIDTH*5;
+   	public static final float VIEW_TO_WORLD = 1 / WORLD_TO_VIEW;
+
 	public final int PLAYER_OFFSET = 100;
 	public final int GAP = 200;
 	public final String TITLE = "игра епта";
+
+	private static Game instance;
+	public static  Game getInstance() {
+		if (instance == null) {
+			instance = new Game();
+		}
+		return instance;
+	}
 
 	PolygonBatch renderer;
 	ShapeDrawer shapeDrawer;
@@ -69,23 +84,15 @@ public class Game extends ApplicationAdapter {
 	float elasticity = 1;
 
 	private LinkedList<GameObject> objects;
+	private LinkedList<GameObject> newObjects;
 	private Player player;
 	private volatile long count;
 	private boolean isRunning;
 
 	private OrthographicCamera camera;
+	World world;
 
 
-	class World {
-		public final float width;
-		public final float height;
-		public World(float w, float h){
-			width = w;
-			height = h;
-		}
-		private List<GameObject> objects;
-		
-	}
 	
 
 	public long getTick() {
@@ -96,14 +103,20 @@ public class Game extends ApplicationAdapter {
 		isRunning = false;
 	}
 
-	public void addObject(GameObject o) {
+	public void addObjectDirectly(GameObject o) {
 		objects.add(o);
 	}
+	public void addObject(GameObject o){
+		newObjects.add(o);
+	}
+
+
 
 	@Override
 	public void create() {
 		isRunning = true;
-
+		world = new World(new Vector2(0,0), true);
+		
 		renderer = new PolygonSpriteBatch();
 		Pixmap pixmap = new Pixmap(1, 1, Format.RGBA8888);
 		pixmap.setColor(Color.WHITE);
@@ -112,26 +125,47 @@ public class Game extends ApplicationAdapter {
 		pixmap.dispose();
 		TextureRegion region = new TextureRegion(texture, 0, 0, 1, 1);
 		shapeDrawer = new ShapeDrawer(renderer,region);
-		shapeDrawer.setDefaultLineWidth(3);
+		shapeDrawer.setDefaultLineWidth(1);
 
 		objects = new LinkedList<>();
+		newObjects = new LinkedList<>();
 		// backgroundObjects = new LinkedList<>();
 		
 
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-		viewport = new ExtendViewport(WIDTH,HEIGHT,camera);
+		viewport = new ExtendViewport(SCREEN_WIDTH,SCREEN_HEIGHT,camera);
 		viewport.apply();
 
 	
-		player = new Player(this);
+		player = new Player(100,100);
+		objects.add(player);
 
 		// objects.add(new Wall(this));
 		// background = new Background(this,WIDTH);
+		addObjectDirectly(new Wall(0, WORLD_HEIGHT/2, 10, WORLD_HEIGHT/2));
+		addObjectDirectly(new Wall(WORLD_WIDTH, WORLD_HEIGHT/2, 10, WORLD_HEIGHT/2));
+		addObjectDirectly(new Wall(WORLD_WIDTH/2, 0, WORLD_WIDTH/2, 10));
+		addObjectDirectly(new Wall(WORLD_WIDTH/2, WORLD_HEIGHT, WORLD_WIDTH/2, 10));
 		
-		objects.add(new Asteroid(this));
-		objects.add(player);
+
+		objects.add(new ExplosionParticle(0,0));
+
+		for(int i=0; i<100; i++){
+			Asteroid a = new Asteroid(MathUtils.random()*WORLD_WIDTH, MathUtils.random()*WORLD_HEIGHT);
+			addObjectDirectly(a);
+		}
+
+		for(int i=0; i<10; i++){
+			Enemy a = new Enemy(MathUtils.random()*WORLD_WIDTH, MathUtils.random()*WORLD_HEIGHT);
+			addObjectDirectly(a);
+		}
+		//objects.add(player);
+		world.setContactListener(new CollusionListener());
+		//PhysicsWorld<PhysicsBody world = new P
+
+		
 	}
 
 	@Override
@@ -146,21 +180,38 @@ public class Game extends ApplicationAdapter {
 
 	@Override
 	public void render() {
-
 		ScreenUtils.clear(0, 0, 0, 0);
-
-		camera.position.set(player.getBody().getPosition().x, player.getBody().getPosition().y, 0);
+		renderer.begin();
+		//camera.position.set(100, 100, 0);
+		if(player!=null) {
+		camera.position.set(player.getViewPosition().x, player.getViewPosition().y, 0);
 		camera.update();
 
 		renderer.setProjectionMatrix(camera.combined);
+		}
 
 		if (Gdx.input.isKeyJustPressed(Input.Keys.P))
 			isRunning = !isRunning;
 	
 
-		renderer.begin();
-		shapeDrawer.rectangle(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-		objects.removeIf((o) -> o.getStatus() == Status.DEAD);
+		shapeDrawer.setColor(Color.GREEN);
+		shapeDrawer.setDefaultLineWidth(3);
+		shapeDrawer.rectangle(10*WORLD_TO_VIEW, 10*WORLD_TO_VIEW, (WORLD_WIDTH-20)*WORLD_TO_VIEW, (WORLD_HEIGHT-20)*WORLD_TO_VIEW);
+
+		objects.addAll(newObjects);
+		newObjects.clear();
+		Iterator<GameObject> iterator = objects.iterator();
+		while(iterator.hasNext()){
+			GameObject obj = iterator.next();
+			if(obj.getStatus()==Status.DESTROYED){
+				obj.destroy();
+				iterator.remove();
+			} else {
+				obj.update();
+				if(obj.getStatus()!=Status.DESTROYED) obj.render();
+			}
+		}
+	
 
 		/*objects.stream().sorted(new GameObject.SortingComparator()).forEachOrdered((obj) -> {
 			
@@ -181,122 +232,9 @@ public class Game extends ApplicationAdapter {
 				//System.out.println("player collides obj");
 			}
 		});*/
-		for(int i = 0; i < objects.size(); i++){
-			objects.get(i).update();
-			objects.get(i).render();
-			for(int j = i+1; j < objects.size(); j++){
-			  GJK2D gjk = new GJK2D(objects.get(i).getBody(), objects.get(j).getBody());
-			  Vector2 penetration = gjk.intersect();
-			  
-			  boolean collided = gjk.collided;
-			  System.out.println(collided);
-			  if(collided){
-				Vector2 contact = gjk.getContactPoint(penetration);
-				if(contact != null){
-				
-				  //pushMatrix();
-				  //translate(width/2, height/2);
-				  //penetration.display();
-				  //popMatrix();
-				  
-				  
-				  
-				  RigidBody A = objects.get(i).getBody();
-				  RigidBody B = objects.get(j).getBody();
-				  
-				  // https://sidvind.com/wiki/2D-Collision_response
-				  /*if(collisionRespone.equals("linear")){
-					Vector velAB = sub(B.vel, A.vel);
-					//Vector normal = normalize(new Vector(-penetration.y, penetration.x));
-					Vector normal = normalize(penetration);
-					
-					Vector a = sub(velAB.neg(), mult(velAB, elasticity));
-					float jnumerator = dot(a, normal);
-					
-					float b = dot(normal, normal);
-					float jdenominator = (b/A.mass) + (b/B.mass);
-					
-					float J = jnumerator / jdenominator;
-					
-					if(A.movable) A.vel.sub(mult(normal, J/A.mass));
-					if(B.movable) B.vel.add(mult(normal, J/B.mass));
-					
-				  }else if(collisionRespone.equals("rotation"))*/{
-					Vector2 velAB = sub(B.getVelocity(), A.getVelocity());
-					Vector2 normal = normalize(penetration);
-					// Vector pointing from the center to the contact
-					Vector2 rap = sub(contact, A.getPosition());
-					Vector2 rbp = sub(contact, B.getPosition());
-					
-					Vector2 a = sub(neg(velAB), mult(velAB, elasticity));
-					float jnumerator = dot(a, normal);
-					
-					float b = dot(normal, normal);
-					float jdenominator1 = (b/A.getMass()) + (b/B.getMass());
-					
-					// (a x b)^2 = (a x b) dot (a x b) = (a x b) x a dot b
-					
-					float ca = (float)Math.pow(dot(rap, normal), 2) / A.getMass();
-					float cb = (float)Math.pow(dot(rbp, normal), 2) / B.getMass();
-					
-					float jdenominator = jdenominator1 + ca + cb;
-					
-					float J = jnumerator/jdenominator;
-					
-					// Move linear
-					A.getVelocity().sub(mult(normal, J/A.getMass()));
-					B.getVelocity().add(mult(normal, J/B.getMass()));
-					
-					// Rotate
-					A.setRotation(A.getRotation()- cross(rap, mult(normal, J)) / A.getMass());
-					B.setRotation(B.getRotation()+ cross(rbp, mult(normal, J)) / A.getMass());
-				  }
-				  
-				A.getPosition().sub(div(penetration, 2));
-				B.getPosition().add(div(penetration, 2));
-				  
-				}
-			  }
-			  
-			  if(collided){
-				gjk.bodyA.overlapping = true;
-				gjk.bodyB.overlapping = true;
-			  }else{
-				gjk.bodyA.overlapping |= false;
-				gjk.bodyB.overlapping |= false;
-			  }
-			}
-		  }
-
+		world.step(0.3f, 10, 10);
+		
 		renderer.end();
-		/*
-		 * while (iterator.hasNext()) {
-		 * GameObject obj = iterator.next();
-		 * if (obj.getStatus() == Status.DEAD) {
-		 * iterator.remove();
-		 * continue;
-		 * }
-		 * if(isRunning)obj.update();
-		 * obj.render();
-		 * if(!isRunning) continue;
-		 * if (obj.getType() == Type.BACKGROUND)
-		 * continue;
-		 * // if(player!=obj) System.out.printf("%f %f %f %f\n", obj.getPosition().x,
-		 * // obj.getPosition().y, ((Rectangle)obj.getShape()).x,
-		 * // ((Rectangle)obj.getShape()).y);
-		 * 
-		 * if (player != obj && AnyShapeIntersector.overlaps(obj.getShape(),
-		 * player.getShape())) {
-		 * player.collide(obj);
-		 * obj.collide(player);
-		 * // obj.setStatus(Status.DEAD);
-		 * System.out.println("player collides obj");
-		 * }
-		 * }
-		 */
-		if (isRunning)
-			count++;
-
 	}
 
 	public PolygonBatch getRenderer() {
@@ -314,8 +252,8 @@ public class Game extends ApplicationAdapter {
 		return player;
 	}
 
-	public float getLeftBoarder() {
-		return player.getBody().getPosition().x - PLAYER_OFFSET;
+	public World getWorld(){
+		return world;
 	}
 
 	public Deque<GameObject> getObjects() {

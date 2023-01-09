@@ -1,28 +1,31 @@
-package com.dimka228.asteroids.objects;
+package com.dimka228.asteroids.objects.interfaces;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Shape2D;
 import com.badlogic.gdx.math.Vector2;
-import com.dimka228.asteroids.physics.RigidBody;
 
 import java.util.Comparator;
-public interface GameObject extends Renderable, Updateable, Collideable{
+
+
+public interface GameObject extends Renderable, Updateable, Destroyable, Collideable{
 
     public enum Type{
         WALL,
         PLAYER,
         BULLET,
         ENEMY,
-        BACKGROUND
+        BACKGROUND,
+        OBSTACLE,
+        PARTICLE
     }
     public enum Status{
         ALIVE,
-        DEAD,
+        DESTROYED,
         DYING
     }
     Type getType();
-    RigidBody getBody();
+    //com.badlogic.gdx.physics.box2d.Body getBody();
     public int getLayer();
     public void setStatus(Status s);
     public Status getStatus();
