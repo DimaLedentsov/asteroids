@@ -16,7 +16,7 @@ public class Enemy extends AbstractPlayer implements AI{
         color = new Color(Color.PURPLE);
         ammo =1;
         reload = 0.005f;
-        hp = 0.2;
+        hp = 0.4;
         setTarget(Game.getInstance().getPlayer());
     }
     public void update(){

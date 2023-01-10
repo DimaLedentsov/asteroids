@@ -21,6 +21,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.PolygonBatch;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -36,6 +37,7 @@ import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.dimka228.asteroids.objects.*;
 import com.dimka228.asteroids.objects.interfaces.GameObject;
@@ -50,6 +52,11 @@ import com.dimka228.asteroids.utils.Random;
 
 import static com.dimka228.asteroids.utils.VectorUtils.*;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class Game extends ApplicationAdapter {
@@ -58,7 +65,7 @@ public class Game extends ApplicationAdapter {
 	public static final int WORLD_WIDTH = 500;
 	public static final int WORLD_HEIGHT = 300;
 
-	public static final float WORLD_TO_VIEW = SCREEN_WIDTH / WORLD_WIDTH*5;
+	public static final float WORLD_TO_VIEW = 10;
    	public static final float VIEW_TO_WORLD = 1 / WORLD_TO_VIEW;
 
 	public final int PLAYER_OFFSET = 100;
@@ -88,7 +95,7 @@ public class Game extends ApplicationAdapter {
 	private Player player;
 	private volatile long count;
 	private boolean isRunning;
-
+	private Stage stage;
 	private OrthographicCamera camera;
 	World world;
 
@@ -112,6 +119,7 @@ public class Game extends ApplicationAdapter {
 
 
 
+	Label bodyCount;
 	@Override
 	public void create() {
 		isRunning = true;
@@ -137,8 +145,19 @@ public class Game extends ApplicationAdapter {
 
 		viewport = new ExtendViewport(SCREEN_WIDTH,SCREEN_HEIGHT,camera);
 		viewport.apply();
-
+		stage = new Stage(new ScreenViewport());
 	
+
+		Label.LabelStyle labelStyle = new Label.LabelStyle(new BitmapFont(),Color.BROWN);
+		
+		bodyCount = new Label("bodies", labelStyle);
+		bodyCount.setSize(20, 10);
+		stage.addActor(bodyCount);
+
+		bodyCount.setPosition(10, 10);
+
+
+
 		player = new Player(100,100);
 		objects.add(player);
 
@@ -181,6 +200,9 @@ public class Game extends ApplicationAdapter {
 	@Override
 	public void render() {
 		ScreenUtils.clear(0, 0, 0, 0);
+		bodyCount.setText(Integer.toString(world.getBodyCount()) + " : " + Integer.toString(objects.size()));
+		stage.draw();
+		stage.act();
 		renderer.begin();
 		//camera.position.set(100, 100, 0);
 		if(player!=null) {
@@ -211,7 +233,8 @@ public class Game extends ApplicationAdapter {
 				if(obj.getStatus()!=Status.DESTROYED) obj.render();
 			}
 		}
-	
+		
+		
 
 		/*objects.stream().sorted(new GameObject.SortingComparator()).forEachOrdered((obj) -> {
 			
