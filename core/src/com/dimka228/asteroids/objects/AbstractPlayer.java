@@ -35,6 +35,7 @@ public abstract class AbstractPlayer extends GameObjectImpl implements Ship{
     protected float reload;
     static final float maxVel  = 1.8f;
     protected boolean isRotatingRight;
+    private Teams team;
     public double getHp() {
         return this.hp;
     }
@@ -79,6 +80,7 @@ public abstract class AbstractPlayer extends GameObjectImpl implements Ship{
         ammo=1;
         reload= 0.1f;
         
+        team = Teams.NEUTRAL;
       
         
     }
@@ -178,6 +180,9 @@ public abstract class AbstractPlayer extends GameObjectImpl implements Ship{
     }
 
 
+    public Teams getTeam(){
+        return team;
+    }
 
     
 }
