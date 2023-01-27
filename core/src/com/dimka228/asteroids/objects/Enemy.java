@@ -32,15 +32,18 @@ public class Enemy extends AbstractPlayer implements AI{
         if(target==null || target.getStatus()==Status.DESTROYED){
             ///////////////
         }else{
-            rotateTo(target.getBody().getPosition());
+            
             //rotateLeft();
             if(distanceTo(target) >20 && da<=MathUtils.PI/3) thrust();
             if(da <=MathUtils.PI/10)shootForward();
+            rotateTo(target.getBody().getPosition());
         }
     }
     public void update(){
         super.update();
         aiManager.update();
+
+ 
     }
 
     public void rotateTo(Vector2 pos){
@@ -57,8 +60,12 @@ public class Enemy extends AbstractPlayer implements AI{
         target = o;
     }
     float angleTo(Vector2 pos){
-        float a =  MathUtils.atan2(body.getPosition().y - pos.y, body.getPosition().x - pos.x);
-        a += MathUtils.PI/2;
+        float a =  MathUtils.atan2( pos.y-body.getPosition().y , pos.x-body.getPosition().x );
+        a -= MathUtils.PI/2;
+        if(a < 0){
+            a += MathUtils.PI2;
+        }
+        
         return a;
 
     }

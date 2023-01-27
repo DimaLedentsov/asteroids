@@ -46,7 +46,7 @@ public abstract class AbstractPlayer extends GameObjectImpl implements Ship{
     public AbstractPlayer(float x, float y) {
  
         // super(coords, velocity, accel, texture, type)
-        super( Type.PLAYER);
+        super( Type.SHIP);
         isRotating = false;
 
         BodyDef def = new BodyDef();

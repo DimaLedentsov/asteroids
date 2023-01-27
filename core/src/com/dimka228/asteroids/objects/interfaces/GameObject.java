@@ -12,9 +12,8 @@ public interface GameObject extends Renderable, Updateable, Destroyable, Collide
 
     public enum Type{
         WALL,
-        PLAYER,
+        SHIP,
         BULLET,
-        ENEMY,
         BACKGROUND,
         OBSTACLE,
         PARTICLE

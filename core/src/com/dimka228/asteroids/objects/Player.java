@@ -100,6 +100,7 @@ public class Player extends AbstractPlayer{
         //body.setRotationAcceleration(0);
         
     }
+
     
 
 }

@@ -38,7 +38,7 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 
 
 public class Bullet extends GameObjectImpl implements Dieable, Damageable, Explodeable{
-    final float velocity = 4;
+    final float velocity = 5;
     private GameObject parent;
 
     final double damage = 0.1;
