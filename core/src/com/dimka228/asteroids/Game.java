@@ -62,10 +62,10 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 public class Game extends ApplicationAdapter {
 	public static final int SCREEN_WIDTH = 1000;
 	public static final int SCREEN_HEIGHT = 800;
-	public static final int WORLD_WIDTH = 500;
-	public static final int WORLD_HEIGHT = 300;
+	public static final int WORLD_WIDTH = 1000;
+	public static final int WORLD_HEIGHT = 450;
 
-	public static final float WORLD_TO_VIEW = 10;
+	public static final float WORLD_TO_VIEW = 7f;
    	public static final float VIEW_TO_WORLD = 1 / WORLD_TO_VIEW;
 
 	public final int PLAYER_OFFSET = 100;
@@ -158,7 +158,7 @@ public class Game extends ApplicationAdapter {
 
 
 
-		player = new Player(100,100);
+		player = new Player(100,100, Teams.A);
 		objects.add(player);
 
 		// objects.add(new Wall(this));
@@ -176,8 +176,16 @@ public class Game extends ApplicationAdapter {
 			addObjectDirectly(a);
 		}
 
-		for(int i=0; i<10; i++){
-			Enemy a = new Enemy(MathUtils.random()*WORLD_WIDTH, MathUtils.random()*WORLD_HEIGHT);
+		for(int i=0; i<100; i++){
+			Enemy a = new Enemy((WORLD_WIDTH/6), MathUtils.random()*WORLD_HEIGHT, Teams.A);
+			addObjectDirectly(a);
+			
+			Enemy b = new Enemy(WORLD_WIDTH*5/6, MathUtils.random()*WORLD_HEIGHT, Teams.B);
+			addObjectDirectly(b);
+		}
+		
+		for(int i=0; i<0; i++){
+			Enemy a = new Enemy(WORLD_WIDTH/2 , MathUtils.random()*WORLD_HEIGHT, Teams.C);
 			addObjectDirectly(a);
 		}
 		//objects.add(player);
@@ -203,18 +211,23 @@ public class Game extends ApplicationAdapter {
 		bodyCount.setText(Integer.toString(world.getBodyCount()) + " : " + Integer.toString(objects.size()));
 		stage.draw();
 		stage.act();
-		renderer.begin();
+		
 		//camera.position.set(100, 100, 0);
+		
 		if(player!=null) {
 		camera.position.set(player.getViewPosition().x, player.getViewPosition().y, 0);
 		camera.update();
 
 		renderer.setProjectionMatrix(camera.combined);
 		}
+		else if(player.getStatus()==Status.DESTROYED) player = null;
+
 
 		if (Gdx.input.isKeyJustPressed(Input.Keys.P))
 			isRunning = !isRunning;
 	
+
+		renderer.begin();
 
 		shapeDrawer.setColor(Color.GREEN);
 		shapeDrawer.setDefaultLineWidth(3);
@@ -229,7 +242,7 @@ public class Game extends ApplicationAdapter {
 				obj.destroy();
 				iterator.remove();
 			} else {
-				obj.update();
+				if( isRunning)obj.update();
 				if(obj.getStatus()!=Status.DESTROYED) obj.render();
 			}
 		}
@@ -255,9 +268,10 @@ public class Game extends ApplicationAdapter {
 				//System.out.println("player collides obj");
 			}
 		});*/
-		world.step(0.3f, 10, 10);
+		
 		
 		renderer.end();
+		if(isRunning)world.step(0.3f, 10, 10);
 	}
 
 	public PolygonBatch getRenderer() {

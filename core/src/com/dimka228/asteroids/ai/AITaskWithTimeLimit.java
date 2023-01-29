@@ -16,11 +16,8 @@ public class AITaskWithTimeLimit extends AISimpleTask{
         super.run();
         counter-=1;
     }
-    public void enable(int t){
-        setEnabled(true);
-        counter = t;
-    }
-    public boolean isEnabled(){
-        return super.isEnabled() && counter>0;
+
+    public boolean isFinished(){
+        return super.isFinished() && counter>0;
     }
 }

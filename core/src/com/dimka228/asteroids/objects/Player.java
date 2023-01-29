@@ -38,16 +38,16 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 public class Player extends AbstractPlayer{
 
 
-    public Player(float x, float y) {
+    public Player(float x, float y, Teams team) {
  
         // super(coords, velocity, accel, texture, type)
-        super(x,y);
+        super(x,y,team);
         color = Color.ORANGE.cpy();
-        hp = 1;
+        hp = 10;
         
     }
     public void update(){
-        super.update();
+        
         if(Gdx.input.isKeyPressed(Input.Keys.W)){
             thrust();
         }
@@ -94,6 +94,7 @@ public class Player extends AbstractPlayer{
         if(Gdx.input.isKeyPressed(Input.Keys.SPACE)){
             shootForward();
         }
+        super.update();
 
         //if(Gdx.input.isKeyPressed(Input.Keys.W)||Gdx.input.isKeyPressed(Input.Keys.S)) angleVel = 0;
         //body.update();

@@ -1,5 +1,8 @@
 package com.dimka228.asteroids.objects;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
@@ -29,6 +32,7 @@ import com.dimka228.asteroids.objects.interfaces.Damageable;
 import com.dimka228.asteroids.objects.interfaces.Dieable;
 import com.dimka228.asteroids.objects.interfaces.Explodeable;
 import com.dimka228.asteroids.objects.interfaces.GameObject;
+import com.dimka228.asteroids.objects.interfaces.Ship;
 import com.dimka228.asteroids.objects.particles.ExplosionParticle;
 import com.dimka228.asteroids.physics.BodyCategories;
 import com.dimka228.asteroids.utils.VectorUtils;
@@ -39,9 +43,11 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class Bullet extends GameObjectImpl implements Dieable, Damageable, Explodeable{
     final float velocity = 5;
-    private GameObject parent;
+    private Ship parent;
 
     final double damage = 0.1;
+    private LinkedList<Vector2> points;
+    private int counter;
     void init(){
         BodyDef def = new BodyDef();
         def.type = BodyType.DynamicBody;
@@ -50,7 +56,7 @@ public class Bullet extends GameObjectImpl implements Dieable, Damageable, Explo
         CircleShape c = new CircleShape();
     
         c.setPosition(new Vector2(0,0));
-        c.setRadius(0.3f);
+        c.setRadius(0.01f);
         FixtureDef fix = new FixtureDef();
         fix.filter.categoryBits= BodyCategories.SCENERY;
         fix.filter.maskBits=BodyCategories.SCENERY;
@@ -64,8 +70,9 @@ public class Bullet extends GameObjectImpl implements Dieable, Damageable, Explo
         layer = 2;      
         color = Color.RED;
         lineWidth = 2;
+        points = new LinkedList<>();
     }
-    public Bullet(GameObject p, float x, float y, float angle){
+    public Bullet(Ship p, float x, float y, float angle){
         super( Type.BULLET);
         init();
         parent = p;
@@ -87,12 +94,21 @@ public class Bullet extends GameObjectImpl implements Dieable, Damageable, Explo
         CircleShape p = (CircleShape)body.getFixtureList().get(0).getShape();
         drawer.setColor(color);
         Vector2 pos = VectorUtils.toView(body.getPosition());
-        drawer.filledCircle(pos, p.getRadius()* Game.WORLD_TO_VIEW);
+        
+        if(points.size()>=1) for(int i=0;i<points.size()-1;i++){
+            //drawer.filledCircle(VectorUtils.toView(points.get(i)), p.getRadius()* Game.WORLD_TO_VIEW);
+            drawer.line(VectorUtils.toView(points.get(i)), VectorUtils.toView(points.get(i+1)), lineWidth);
+        }
+        //drawer.filledCircle(pos, p.getRadius()* Game.WORLD_TO_VIEW);
         //drawer.circle(pos.x, pos.y, p.getRadius()* Game.WORLD_TO_VIEW, lineWidth, JoinType.NONE);
     }
     public void update(){
        
-        
+        //if(counter%10==0){
+            points.addLast(body.getPosition().cpy());
+            if(points.size()>=4) points.removeFirst();
+       // }
+        counter++;
         //body.update();
         
     }
@@ -103,7 +119,11 @@ public class Bullet extends GameObjectImpl implements Dieable, Damageable, Explo
             die();
             //obj.getBody().applyLinearImpulse(body.getLinearVelocity().scl(0.1f), body.getPosition(), false);
             explode();
-            if(obj instanceof Alive){
+            if(obj.getType()==Type.SHIP){
+                Ship sh = (Ship)obj;
+                if(sh.getTeam()!=parent.getTeam()) applyDamage(sh);
+            }
+            else if(obj instanceof Alive){
                 applyDamage((Alive)obj);
             }
         }

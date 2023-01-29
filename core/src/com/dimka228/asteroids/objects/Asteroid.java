@@ -40,7 +40,7 @@ public class Asteroid extends GameObjectImpl implements Dieable{
         body = Game.getInstance().getWorld().createBody(def);
         PolygonShape poly = new PolygonShape();
 
-        poly.set(PolygonUtils.generate(6, 3));;
+        poly.set(PolygonUtils.generate(10, 3));;
         FixtureDef fix = new FixtureDef();
         fix.filter.categoryBits= BodyCategories.SCENERY;
         fix.filter.maskBits=BodyCategories.SCENERY;

@@ -31,7 +31,7 @@ public class AIManager implements Updateable{
         //if(current == null) return;
 
         if(task.isEnabled()) task.run();
-        else actions.poll();
+        if(task.isFinished()) actions.poll();
     }
    
 

@@ -7,6 +7,7 @@ import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.dimka228.asteroids.Game;
+import com.dimka228.asteroids.objects.Bullet;
 import com.dimka228.asteroids.objects.interfaces.GameObject;
 import com.dimka228.asteroids.objects.particles.ExplosionParticle;
 import com.dimka228.asteroids.utils.VectorUtils;
@@ -26,7 +27,7 @@ public class CollusionListener implements ContactListener {
         GameObject o2 = (GameObject)b.getUserData();
         o1.collide(o2);
         o2.collide(o1);
-
+    
         Vector2 p = contact.getWorldManifold().getPoints()[0];
         Vector2 c = VectorUtils.toView(contact.getWorldManifold().getPoints()[0]);
         //Game.getInstance().getDrawer().circle(c.x,c.y, 5);

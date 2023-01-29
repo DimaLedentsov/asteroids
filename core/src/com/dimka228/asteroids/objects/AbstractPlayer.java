@@ -35,7 +35,7 @@ public abstract class AbstractPlayer extends GameObjectImpl implements Ship{
     protected float reload;
     static final float maxVel  = 1.8f;
     protected boolean isRotatingRight;
-    private Teams team;
+    protected Teams team;
     public double getHp() {
         return this.hp;
     }
@@ -43,10 +43,13 @@ public abstract class AbstractPlayer extends GameObjectImpl implements Ship{
     public void setHp(double hp) {
         this.hp = hp;
     }
-    public AbstractPlayer(float x, float y) {
+    public AbstractPlayer(float x, float y, Teams team) {
  
         // super(coords, velocity, accel, texture, type)
         super( Type.SHIP);
+        this.team = team;
+        color = new Color(team.getColor());
+        team.addPlayer(this);
         isRotating = false;
 
         BodyDef def = new BodyDef();
@@ -182,6 +185,12 @@ public abstract class AbstractPlayer extends GameObjectImpl implements Ship{
 
     public Teams getTeam(){
         return team;
+    }
+
+    @Override 
+    public void destroy(){
+        super.destroy();
+        team.removePlayer(this);
     }
 
     
