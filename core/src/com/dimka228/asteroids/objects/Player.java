@@ -35,7 +35,7 @@ import com.dimka228.asteroids.utils.VectorUtils;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 
-public class Player extends AbstractPlayer{
+public class Player extends AbstractShip{
 
 
     public Player(float x, float y, Teams team) {

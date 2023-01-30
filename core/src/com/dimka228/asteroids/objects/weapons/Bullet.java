@@ -1,4 +1,4 @@
-package com.dimka228.asteroids.objects;
+package com.dimka228.asteroids.objects.weapons;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -27,6 +27,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.dimka228.asteroids.Game;
 import com.dimka228.asteroids.logic.Forceable;
+import com.dimka228.asteroids.objects.GameObjectImpl;
 import com.dimka228.asteroids.objects.interfaces.Alive;
 import com.dimka228.asteroids.objects.interfaces.Damageable;
 import com.dimka228.asteroids.objects.interfaces.Dieable;
@@ -78,6 +79,7 @@ public class Bullet extends GameObjectImpl implements Dieable, Damageable, Explo
         parent = p;
         body.setTransform(x, y, angle);
         body.setLinearVelocity((new Vector2(Vector2.Y)).scl(velocity).rotateRad(angle));
+        color = p.getTeam().getColor().cpy();
     }
     public Bullet() {
         // super(coords, velocity, accel, texture, type)
@@ -130,7 +132,7 @@ public class Bullet extends GameObjectImpl implements Dieable, Damageable, Explo
     }
 
     public void explode(){
-        Game.getInstance().addObject(new ExplosionParticle(body.getPosition().x, body.getPosition().y));
+        Game.getInstance().addObject(new ExplosionParticle(body.getPosition().x, body.getPosition().y, Color.RED));
 
     }
 

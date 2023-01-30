@@ -18,6 +18,7 @@ import com.dimka228.asteroids.objects.interfaces.Ship;
 import com.dimka228.asteroids.objects.interfaces.Shootable;
 import com.dimka228.asteroids.objects.particles.ExplosionParticle;
 import com.dimka228.asteroids.objects.particles.ThrustParticle;
+import com.dimka228.asteroids.objects.weapons.Bullet;
 import com.dimka228.asteroids.physics.BodyCategories;
 import com.dimka228.asteroids.utils.Random;
 import com.dimka228.asteroids.utils.VectorUtils;
@@ -25,7 +26,7 @@ import com.dimka228.asteroids.utils.VectorUtils;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 //TODO: TEAMS!
 
-public abstract class AbstractPlayer extends GameObjectImpl implements Ship{
+public abstract class AbstractShip extends GameObjectImpl implements Ship{
     protected boolean isRotating;
     protected Vector2 shootingPoint;
     protected Vector2 thrustPoint;
@@ -36,6 +37,7 @@ public abstract class AbstractPlayer extends GameObjectImpl implements Ship{
     static final float maxVel  = 1.8f;
     protected boolean isRotatingRight;
     protected Teams team;
+    private int counter;
     public double getHp() {
         return this.hp;
     }
@@ -43,7 +45,7 @@ public abstract class AbstractPlayer extends GameObjectImpl implements Ship{
     public void setHp(double hp) {
         this.hp = hp;
     }
-    public AbstractPlayer(float x, float y, Teams team) {
+    public AbstractShip(float x, float y, Teams team) {
  
         // super(coords, velocity, accel, texture, type)
         super( Type.SHIP);
@@ -79,7 +81,7 @@ public abstract class AbstractPlayer extends GameObjectImpl implements Ship{
         body.setUserData(this);
         layer = 2;    
         hp = 1;  
-        rotation = 0.2f;
+        rotation = 0.115f;
         ammo=1;
         reload= 0.1f;
         
@@ -95,6 +97,8 @@ public abstract class AbstractPlayer extends GameObjectImpl implements Ship{
         Vector2 vel = body.getLinearVelocity();
         if(vel.len()>maxVel) body.setLinearVelocity(vel.nor().scl(maxVel));
         if(hp<=0) die();
+
+        counter++;
     }
     public void collide(GameObject obj){
     

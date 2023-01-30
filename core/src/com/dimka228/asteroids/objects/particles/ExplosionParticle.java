@@ -27,6 +27,16 @@ public class ExplosionParticle extends Particle{
         alphaD = 0.01f;
         color = new Color(Color.RED);
     }
+    public ExplosionParticle(float x, float y, Color c){
+
+        pos = new Vector2(x, y);
+        vel = new Vector2();
+        size=0.00001f;
+        sizeD=0.025f;
+
+        alphaD = 0.01f;
+        color = new Color(c);
+    }
     public ExplosionParticle(Vector2 p,  Vector2 v, float s, float sd, float ad, Color c){
 
         pos = p.cpy();

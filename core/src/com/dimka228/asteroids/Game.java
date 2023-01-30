@@ -177,15 +177,15 @@ public class Game extends ApplicationAdapter {
 		}
 
 		for(int i=0; i<100; i++){
-			Enemy a = new Enemy((WORLD_WIDTH/6), MathUtils.random()*WORLD_HEIGHT, Teams.A);
+			SimpleBot a = new SimpleBot((WORLD_WIDTH/6), MathUtils.random()*WORLD_HEIGHT, Teams.A);
 			addObjectDirectly(a);
 			
-			Enemy b = new Enemy(WORLD_WIDTH*5/6, MathUtils.random()*WORLD_HEIGHT, Teams.B);
+			SimpleBot b = new SimpleBot(WORLD_WIDTH*5/6, MathUtils.random()*WORLD_HEIGHT, Teams.B);
 			addObjectDirectly(b);
 		}
 		
 		for(int i=0; i<0; i++){
-			Enemy a = new Enemy(WORLD_WIDTH/2 , MathUtils.random()*WORLD_HEIGHT, Teams.C);
+			SimpleBot a = new SimpleBot(WORLD_WIDTH/2 , MathUtils.random()*WORLD_HEIGHT, Teams.C);
 			addObjectDirectly(a);
 		}
 		//objects.add(player);
@@ -272,6 +272,10 @@ public class Game extends ApplicationAdapter {
 		
 		renderer.end();
 		if(isRunning)world.step(0.3f, 10, 10);
+
+		
+		if(Teams.A.getPlayers().size()<100)  addObject(new SimpleBot((WORLD_WIDTH/6), MathUtils.random()*WORLD_HEIGHT, Teams.A));
+		if(Teams.B.getPlayers().size()<100) addObject(new SimpleBot(WORLD_WIDTH*5/6, MathUtils.random()*WORLD_HEIGHT, Teams.B));
 	}
 
 	public PolygonBatch getRenderer() {

@@ -1,4 +1,4 @@
-package com.dimka228.asteroids.objects;
+package com.dimka228.asteroids.objects.weapons;
 
 
 import com.badlogic.gdx.graphics.Color;
@@ -9,16 +9,19 @@ import com.dimka228.asteroids.ai.AIConditionalTask;
 import com.dimka228.asteroids.ai.AIManager;
 import com.dimka228.asteroids.ai.AISimpleTask;
 import com.dimka228.asteroids.ai.AITaskWithTimeLimit;
+import com.dimka228.asteroids.objects.Teams;
 import com.dimka228.asteroids.objects.interfaces.AI;
 import com.dimka228.asteroids.objects.interfaces.GameObject;
+import com.dimka228.asteroids.objects.interfaces.Ship;
 import com.dimka228.asteroids.utils.VectorUtils;
-
-public class Enemy extends AbstractPlayer implements AI{
+/*/
+public class Rocket extends AbstractShip implements AI{
     GameObject target;
     AIManager aiManager;
     private int counter;
-    public Enemy(float x, float y, Teams team){
-        super(x, y, team);
+    protected Ship parent;
+    public Rocket(Ship s, float x, float y, float a){
+        super(x, y, Teams.NEUTRAL);
         color = new Color(team.getColor());
         ammo =1;
         reload = 0.05f;
@@ -69,8 +72,7 @@ public class Enemy extends AbstractPlayer implements AI{
         float b = body.getAngle();
         
         //if(a>MathUtils.PI/2) a-=MathUtils.PI/2;
-        /*if(Math.abs(a-b)>=MathUtils.PI) rotateRight();
-        else*/ if(a>b) rotateRight();
+        if(a>b) rotateRight();
          else if (a<b) rotateLeft();
         //body.setTransform(body.getPosition(), a);
     }
@@ -90,4 +92,4 @@ public class Enemy extends AbstractPlayer implements AI{
     float distanceTo(GameObject o){
         return VectorUtils.distance(body.getPosition(), o.getBody().getPosition());
     }
-}
+}*/

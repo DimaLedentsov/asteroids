@@ -7,9 +7,9 @@ import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.dimka228.asteroids.Game;
-import com.dimka228.asteroids.objects.Bullet;
 import com.dimka228.asteroids.objects.interfaces.GameObject;
 import com.dimka228.asteroids.objects.particles.ExplosionParticle;
+import com.dimka228.asteroids.objects.weapons.Bullet;
 import com.dimka228.asteroids.utils.VectorUtils;
 
 public class CollusionListener implements ContactListener {
