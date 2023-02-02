@@ -40,7 +40,7 @@ public class SimpleBot extends AbstractShip implements AI{
             
             //rotateLeft();
             if(distanceTo(target) >10 && da<=MathUtils.PI/3) thrust();
-            if(da <=MathUtils.PI/10)shootForward();
+            if(da <=MathUtils.PI/10 && distanceTo(target) <250)shootForward();
             rotateTo(target.getBody().getPosition());
         }
     }

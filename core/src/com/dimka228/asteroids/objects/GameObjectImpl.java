@@ -108,4 +108,7 @@ public abstract class GameObjectImpl extends AbstractGameObject implements GameO
     public Vector2 getViewPosition(){
         return body.getPosition().scl(Game.WORLD_TO_VIEW);
     }
+    public Vector2 getPosition(){
+        return body.getPosition();
+    }
 }

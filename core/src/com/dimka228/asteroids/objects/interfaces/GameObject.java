@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import java.util.Comparator;
 
 
-public interface GameObject extends Renderable, Updateable, Destroyable, Collideable{
+public interface GameObject extends Renderable, Updateable, Destroyable, Collideable, Positionable{
 
     public enum Type{
         WALL,

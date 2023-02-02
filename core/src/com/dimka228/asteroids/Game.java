@@ -49,6 +49,7 @@ import com.dimka228.asteroids.physics.CollusionListener;
 import com.dimka228.asteroids.utils.AnyShapeIntersector;
 
 import com.dimka228.asteroids.utils.Random;
+import com.dimka228.asteroids.utils.VectorUtils;
 
 import static com.dimka228.asteroids.utils.VectorUtils.*;
 import com.badlogic.gdx.physics.box2d.*;
@@ -243,7 +244,7 @@ public class Game extends ApplicationAdapter {
 				iterator.remove();
 			} else {
 				if( isRunning)obj.update();
-				if(obj.getStatus()!=Status.DESTROYED) obj.render();
+				if(obj.getStatus()!=Status.DESTROYED && (VectorUtils.distance(obj.getPosition(), player.getPosition())<250 || player==null)) obj.render();
 			}
 		}
 		
@@ -274,8 +275,8 @@ public class Game extends ApplicationAdapter {
 		if(isRunning)world.step(0.3f, 10, 10);
 
 		
-		if(Teams.A.getPlayers().size()<100)  addObject(new SimpleBot((WORLD_WIDTH/6), MathUtils.random()*WORLD_HEIGHT, Teams.A));
-		if(Teams.B.getPlayers().size()<100) addObject(new SimpleBot(WORLD_WIDTH*5/6, MathUtils.random()*WORLD_HEIGHT, Teams.B));
+		//if(Teams.A.getPlayers().size()<100)  addObject(new SimpleBot((WORLD_WIDTH/6), MathUtils.random()*WORLD_HEIGHT, Teams.A));
+		//if(Teams.B.getPlayers().size()<100) addObject(new SimpleBot(WORLD_WIDTH*5/6, MathUtils.random()*WORLD_HEIGHT, Teams.B));
 	}
 
 	public PolygonBatch getRenderer() {

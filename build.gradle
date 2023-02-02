@@ -17,6 +17,8 @@ buildscript {
 allprojects {
     apply plugin: "eclipse"
 
+
+    
     version = '1.0'
     ext {
         appName = "asteroids"
@@ -65,5 +67,10 @@ project(":core") {
         api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         api "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdxControllersVersion"
         //implementation group: 'org.dyn4j', name: 'dyn4j', version: '3.1.5'
+        compileOnly 'org.projectlombok:lombok:1.18.24'
+	    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+	
+	    testCompileOnly 'org.projectlombok:lombok:1.18.24'
+	    testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
     }
 }
