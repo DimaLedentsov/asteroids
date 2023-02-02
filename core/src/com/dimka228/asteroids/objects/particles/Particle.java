@@ -12,6 +12,7 @@ public class Particle extends AbstractGameObject{
         super(GameObject.Type.PARTICLE);
         lifeTime = 1000000;
     }
+    
     protected Vector2 pos;
     protected Vector2 vel;
     protected int lifeTime;
@@ -55,4 +56,5 @@ public class Particle extends AbstractGameObject{
     }
     public void destroy(){}
     public Body getBody(){return null;}
+    public Vector2 getPosition(){return pos;}
 }

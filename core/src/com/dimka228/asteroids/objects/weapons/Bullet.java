@@ -46,6 +46,7 @@ public class Bullet extends GameObjectImpl implements Dieable, Damageable, Explo
     final float velocity = 5;
     private Ship parent;
 
+    
     final double damage = 0.1;
     private LinkedList<Vector2> points;
     private int counter;
