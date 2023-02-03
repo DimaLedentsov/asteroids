@@ -1,7 +1,7 @@
 
 package net.logwrapper;
 import java.util.logging.*;
-public class DefaultLogger  extends java.util.logging.Logger{
+public class DefaultLogger  implements Logger{
     private final java.util.logging.Logger logger;
     public DefaultLogger() {
         this.logger = java.util.logging.Logger.getLogger("net");

@@ -8,11 +8,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import net.exceptions.*;
+import net.common.*;
+import net.logwrapper.*;
 /**
  * server class
  */
-public class Server<RequestT, ResponseT> extends Thread implements SenderReceiver<RequestT, ResponseT>, DataHandler<RequestT, ResponseT>{
+public class Server<RequestT, ResponseT > extends Thread implements SenderReceiver, DataHandler<RequestT, ResponseT>{
     public final int MAX_CLIENTS = 10;
 
 
@@ -33,7 +35,7 @@ public class Server<RequestT, ResponseT> extends Thread implements SenderReceive
 
     private DataHandler<RequestT, ResponseT> dataHandler;
     private Logger logger;
-    private void init(int p) throws ConnectionException, DatabaseException {
+    private void init(int p) throws ConnectionException {
         running = true;
         port = p;
 
@@ -130,17 +132,19 @@ public class Server<RequestT, ResponseT> extends Thread implements SenderReceive
         }
     }
 
-    public ResponseT handle(RequestT request) throws Exception{
-
+    public ResponseT handle(RequestT request) throws InvalidDataException{
+        return null;
     }
     private void handleRequest(InetSocketAddress address, RequestT request) {
         if(dataHandler==null) dataHandler = this::handle;
-        try(ResponseT ans = dataHandler.handle(request)){
+        ResponseT ans = null;
+        try{
+            ans = dataHandler.handle(request);
+            if(ans==null) throw new DataHandleException("data handler returned null");
             responseQueue.offer(new AbstractMap.SimpleEntry<>(address, ans));
-        } catch (Exception e){
-            logger.error("something went wrong during processing request", e.getMessage());
-        }
-        
+        } catch (InvalidDataException e){
+            logger.error("something went wrong during processing request:"+ e.getMessage());
+        }      
         
     }
 
@@ -185,7 +189,6 @@ public class Server<RequestT, ResponseT> extends Thread implements SenderReceive
             receiverThreadPool.shutdown();
             requestHandlerThreadPool.shutdown();
             senderThreadPool.shutdown();
-            databaseHandler.closeConnection();
             channel.close();
         } catch (IOException e) {
             logger.error("cannot close channel");

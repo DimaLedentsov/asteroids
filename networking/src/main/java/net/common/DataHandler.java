@@ -1,4 +1,5 @@
 package net.common;
-public interface RequestHandler <RequestT, ResponseT> {
-    public ResponseT handle(RequestT request);
+import net.exceptions.InvalidDataException;
+public interface DataHandler <RequestT, ResponseT> {
+    public ResponseT handle(RequestT request) throws InvalidDataException;
 }
