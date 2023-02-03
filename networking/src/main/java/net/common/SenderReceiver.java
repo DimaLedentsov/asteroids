@@ -1,4 +1,4 @@
-package com.dimka228.asteroids.net;
+package net.common;
 
 public interface SenderReceiver <Request, Response>{
     public void send(Request request);

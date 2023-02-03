@@ -1,4 +1,4 @@
-package server;
+package net.server;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 /**
  * server class
  */
-public class Server<RequestT, ResponseT> extends Thread implements SenderReceiver<RequestT, ResponseT> {
+public class Server<RequestT, ResponseT> extends Thread implements SenderReceiver<RequestT, ResponseT>, DataHandler<RequestT, ResponseT>{
     public final int MAX_CLIENTS = 10;
 
 
@@ -24,30 +24,30 @@ public class Server<RequestT, ResponseT> extends Thread implements SenderReceive
     private ExecutorService senderThreadPool;
     private ExecutorService requestHandlerThreadPool;
 
-    private Queue<Map.Entry<InetSocketAddress, Request>> requestQueue;
-    private Queue<Map.Entry<InetSocketAddress, Response>> responseQueue;
+    private Queue<Map.Entry<InetSocketAddress, RequestT>> requestQueue;
+    private Queue<Map.Entry<InetSocketAddress, ResponseT>> responseQueue;
 
     private volatile boolean running;
 
     private Selector selector;
 
     private DataHandler<RequestT, ResponseT> dataHandler;
+    private Logger logger;
     private void init(int p) throws ConnectionException, DatabaseException {
         running = true;
         port = p;
 
-        hostUser = null;
         receiverThreadPool = Executors.newFixedThreadPool(MAX_CLIENTS);
         senderThreadPool = Executors.newFixedThreadPool(MAX_CLIENTS);
         requestHandlerThreadPool = Executors.newFixedThreadPool(MAX_CLIENTS);
 
         requestQueue = new ConcurrentLinkedQueue<>();
         responseQueue = new ConcurrentLinkedQueue<>();
-
+        logger = new DefaultLogger();
 
         host(port);
         setName("server thread");
-        Log.logger.trace("starting server");
+        logger.trace("starting server");
     }
 
     private void host(int p) throws ConnectionException {
@@ -71,6 +71,11 @@ public class Server<RequestT, ResponseT> extends Thread implements SenderReceive
     public void setDataHandler(DataHandler<RequestT, ResponseT> dataHandler) {
         this.dataHandler = dataHandler;
     }
+
+    public void setLogger(Logger logger) {
+        this.logger = logger;
+    }
+    
     public Server(int p) throws ConnectionException {
         init(p);
     }
@@ -84,11 +89,11 @@ public class Server<RequestT, ResponseT> extends Thread implements SenderReceive
     private void receive() throws ConnectionException, InvalidDataException {
         ByteBuffer buf = ByteBuffer.allocate(BUFFER_SIZE);
         InetSocketAddress clientAddress = null;
-        Request request = null;
+        RequestT request = null;
         try {
             clientAddress = (InetSocketAddress) channel.receive(buf);
             if (clientAddress == null) return; //no data to read
-            Log.logger.trace("received request from " + clientAddress.toString());
+            logger.trace("received request from " + clientAddress.toString());
         } catch (ClosedChannelException e) {
             throw new ClosedConnectionException();
         } catch (IOException e) {
@@ -96,7 +101,7 @@ public class Server<RequestT, ResponseT> extends Thread implements SenderReceive
         }
         try {
             ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(buf.array()));
-            request = (Request) objectInputStream.readObject();
+            request = (RequestT) objectInputStream.readObject();
         } catch (ClassNotFoundException | ClassCastException | IOException e) {
             throw new InvalidReceivedDataException();
         }
@@ -112,28 +117,28 @@ public class Server<RequestT, ResponseT> extends Thread implements SenderReceive
      * @param response
      * @throws ConnectionException
      */
-    public void send(InetSocketAddress clientAddress, Response response) throws ConnectionException {
+    public void send(InetSocketAddress clientAddress, ResponseT response) throws ConnectionException {
         if (clientAddress == null) throw new InvalidAddressException("no client address found");
         try {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(BUFFER_SIZE);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
             objectOutputStream.writeObject(response);
             channel.send(ByteBuffer.wrap(byteArrayOutputStream.toByteArray()), clientAddress);
-            Log.logger.trace("sent response to " + clientAddress.toString());
+            logger.trace("sent response to " + clientAddress.toString());
         } catch (IOException e) {
             throw new ConnectionException("something went wrong during sending response");
         }
     }
 
-    public Response processRequest(Request request) throws Exception{
+    public ResponseT handle(RequestT request) throws Exception{
 
     }
-    private void handleRequest(InetSocketAddress address, Request request) {
-
-        try(Response ans = dataHandler.handle(request)){
+    private void handleRequest(InetSocketAddress address, RequestT request) {
+        if(dataHandler==null) dataHandler = this::handle;
+        try(ResponseT ans = dataHandler.handle(request)){
             responseQueue.offer(new AbstractMap.SimpleEntry<>(address, ans));
         } catch (Exception e){
-            Log.logger.error("something went wrong during processing request", e.getMessage());
+            logger.error("something went wrong during processing request", e.getMessage());
         }
         
         
@@ -183,7 +188,7 @@ public class Server<RequestT, ResponseT> extends Thread implements SenderReceive
             databaseHandler.closeConnection();
             channel.close();
         } catch (IOException e) {
-            Log.logger.error("cannot close channel");
+            logger.error("cannot close channel");
         }
     }
 
@@ -192,16 +197,16 @@ public class Server<RequestT, ResponseT> extends Thread implements SenderReceive
             try {
                 receive();
             } catch (ConnectionException | InvalidDataException e) {
-                Log.logger.error(e.getMessage());
+                logger.error(e.getMessage());
             }
         }
     }
 
     private class RequestHandler implements Runnable {
-        private final Request request;
+        private final RequestT request;
         private final InetSocketAddress address;
 
-        public RequestHandler(Map.Entry<InetSocketAddress, Request> requestEntry) {
+        public RequestHandler(Map.Entry<InetSocketAddress, RequestT> requestEntry) {
             request = requestEntry.getValue();
             address = requestEntry.getKey();
         }
@@ -212,10 +217,10 @@ public class Server<RequestT, ResponseT> extends Thread implements SenderReceive
     }
 
     private class Sender implements Runnable {
-        private final Response response;
+        private final ResponseT response;
         private final InetSocketAddress address;
 
-        public Sender(Map.Entry<InetSocketAddress, Response> responseEntry) {
+        public Sender(Map.Entry<InetSocketAddress, ResponseT> responseEntry) {
             response = responseEntry.getValue();
             address = responseEntry.getKey();
         }
@@ -224,7 +229,7 @@ public class Server<RequestT, ResponseT> extends Thread implements SenderReceive
             try {
                 send(address, response);
             } catch (ConnectionException e) {
-                Log.logger.error(e.getMessage());
+                logger.error(e.getMessage());
             }
         }
     }

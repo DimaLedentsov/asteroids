@@ -1,4 +1,4 @@
-package common.exceptions;
+package net.exceptions;
 
 /**
  * base class for all connection exceptions caused by connection problems

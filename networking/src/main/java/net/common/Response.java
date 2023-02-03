@@ -1,4 +1,4 @@
-package com.dimka228.asteroids.net;
+package net.common;
 
 public class Response {
     

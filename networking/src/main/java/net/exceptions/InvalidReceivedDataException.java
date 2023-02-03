@@ -1,4 +1,4 @@
-package common.exceptions;
+package net.exceptions;
 
 /**
  * thrown when received data is invalid
