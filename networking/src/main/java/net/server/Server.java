@@ -14,7 +14,7 @@ import net.logwrapper.*;
 /**
  * server class
  */
-public class Server<RequestT, ResponseT > extends Thread implements SenderReceiver, DataHandler<RequestT, ResponseT>{
+public class Server<RequestT extends Serializable, ResponseT extends Serializable> extends Thread implements SenderReceiver, DataHandler<RequestT, ResponseT>, AutoCloseable{
     public final int MAX_CLIENTS = 10;
 
 
@@ -35,6 +35,7 @@ public class Server<RequestT, ResponseT > extends Thread implements SenderReceiv
 
     private DataHandler<RequestT, ResponseT> dataHandler;
     private Logger logger;
+    
     private void init(int p) throws ConnectionException {
         running = true;
         port = p;
@@ -45,7 +46,7 @@ public class Server<RequestT, ResponseT > extends Thread implements SenderReceiv
 
         requestQueue = new ConcurrentLinkedQueue<>();
         responseQueue = new ConcurrentLinkedQueue<>();
-        logger = new DefaultLogger();
+        logger = new DefaultLogger("server");
 
         host(port);
         setName("server thread");
