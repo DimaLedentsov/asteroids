@@ -7,13 +7,13 @@
     </CustomLevels>
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%d{HH:mm:ss.SSS} %-5level] %msg%n" charset="UTF-8"/>
+            <PatternLayout pattern="[%d{HH:mm:ss.SSS} %-5level] [%logger{36}] %msg%n" charset="UTF-8"/>
         </Console>
         <File name="File1" fileName="logs/errors.log">
-            <PatternLayout pattern="[%d{HH:mm:ss.SSS} %-5level] %msg%n" charset="UTF-8"/>
+            <PatternLayout pattern="[%d{HH:mm:ss.SSS} %-5level] [%logger{36}] %msg%n" charset="UTF-8"/>
         </File>
         <File name="File" fileName="logs/application.log">
-            <PatternLayout pattern="[%d{HH:mm:ss.SSS} %-5level] %msg%n" charset="UTF-8"/>
+            <PatternLayout pattern="[%d{HH:mm:ss.SSS} %-5level] [%logger{36}] %msg%n" charset="UTF-8"/>
         </File>
     </Appenders>
     <Loggers>

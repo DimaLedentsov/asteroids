@@ -96,7 +96,7 @@ public class Server<RequestT extends Serializable, ResponseT extends Serializabl
         try {
             clientAddress = (InetSocketAddress) channel.receive(buf);
             if (clientAddress == null) return; //no data to read
-            logger.trace("received request from " + clientAddress.toString());
+            
         } catch (ClosedChannelException e) {
             throw new ClosedConnectionException();
         } catch (IOException e) {
@@ -105,6 +105,8 @@ public class Server<RequestT extends Serializable, ResponseT extends Serializabl
         try {
             ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(buf.array()));
             request = (RequestT) objectInputStream.readObject();
+            if(request==null) throw new InvalidReceivedDataException();
+            logger.trace("received request from " + clientAddress.toString());
         } catch (ClassNotFoundException | ClassCastException | IOException e) {
             throw new InvalidReceivedDataException();
         }

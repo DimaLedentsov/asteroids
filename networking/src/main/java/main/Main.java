@@ -1,6 +1,7 @@
 package main;
 import java.io.*;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.client.Client;
 import net.common.Request;
@@ -11,9 +12,10 @@ import net.logwrapper.*;
 public class Main {
     public static void main(String[] args) throws ConnectionException{
         System.out.println("Hello World!");
-        Logger logger = new Log4jLogger("");
+        AtomicInteger counter = new AtomicInteger(0);
+        Logger logger = new Log4jLogger("client");
         Server<Request,Response> server = new Server<>(8080);
-        server.setLogger(logger);
+        server.setLogger(new Log4jLogger("server"));
         server.setDataHandler((req)->{
             logger.info(req.getMessage());
             return new Response("server response");
@@ -24,13 +26,13 @@ public class Main {
         Client<Response,Request> client = new Client<>(4040,"localhost",8080);
         client.setLogger(logger);
         client.setDataHandler((res)->{
-            logger.info(res.getMessage());
-            return new Request("client request");
+            //logger.info(res.getMessage());
+            return new Request("client request"+ counter.getAndIncrement());
         });
         client.start();
 
-        client.send(new Request("first request"));
-
+        client.addRequest(new Request("first request"));
+        
         Executors.newScheduledThreadPool(1).schedule(()->{
             System.out.println("done");
             server.close();

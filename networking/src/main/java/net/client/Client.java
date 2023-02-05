@@ -152,13 +152,16 @@ public class Client<RequestT extends Serializable, ResponseT extends Serializabl
         try{
             ans = dataHandler.handle(request);
             if(ans==null) throw new DataHandleException("data handler returned null");
-            responseQueue.offer(ans);
+            
         } catch (InvalidDataException e){
             logger.error("something went wrong during processing request:"+ e.getMessage());
         }      
         
     }
 
+    public void addRequest(ResponseT request) {
+        responseQueue.offer(request);
+    }
     /**
      * runs server in multithreading mode
      */

@@ -13,7 +13,7 @@ public class Log4jLogger  implements net.logwrapper.Logger{
     private final org.apache.logging.log4j.Logger logger;
     public Log4jLogger(String name) {
         
-        this.logger = org.apache.logging.log4j.LogManager.getRootLogger();
+        this.logger = org.apache.logging.log4j.LogManager.getLogger(name);
 
     }
     public void trace(String message) {
