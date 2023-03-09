@@ -7,4 +7,6 @@ eclipse.project.name = appName + "-core"
 dependencies {
     //implementation group: 'org.dyn4j', name: 'dyn4j', version: '4.2.2'
     implementation "space.earlygrey:shapedrawer:$shapedrawerVersion"
+     implementation 'com.crashinvaders.vfx:gdx-vfx-core:0.5.1'
+    implementation 'com.crashinvaders.vfx:gdx-vfx-effects:0.5.1' 
 }

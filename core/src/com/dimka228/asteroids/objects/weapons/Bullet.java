@@ -48,8 +48,9 @@ public class Bullet extends GameObjectImpl implements Dieable, Damageable, Explo
 
     
     final double damage = 0.1;
-    private LinkedList<Vector2> points;
+  
     private int counter;
+
     void init(){
         BodyDef def = new BodyDef();
         def.type = BodyType.DynamicBody;
@@ -72,7 +73,8 @@ public class Bullet extends GameObjectImpl implements Dieable, Damageable, Explo
         layer = 2;      
         color = Color.RED;
         lineWidth = 2;
-        points = new LinkedList<>();
+      
+        lineWidth = 1f;
     }
     public Bullet(Ship p, float x, float y, float angle){
         super( Type.BULLET);
@@ -96,21 +98,23 @@ public class Bullet extends GameObjectImpl implements Dieable, Damageable, Explo
 
         CircleShape p = (CircleShape)body.getFixtureList().get(0).getShape();
         drawer.setColor(color);
+        drawer.setDefaultLineWidth(lineWidth);
         Vector2 pos = VectorUtils.toView(body.getPosition());
         
-        if(points.size()>=1) for(int i=0;i<points.size()-1;i++){
-            //drawer.filledCircle(VectorUtils.toView(points.get(i)), p.getRadius()* Game.WORLD_TO_VIEW);
-            drawer.line(VectorUtils.toView(points.get(i)), VectorUtils.toView(points.get(i+1)), lineWidth);
-        }
+        //if(points.size()>=1) for(int i=0;i<points.size()-1;i++){
+        //    //drawer.filledCircle(VectorUtils.toView(points.get(i)), p.getRadius()* Game.WORLD_TO_VIEW);
+        //    drawer.line(VectorUtils.toView(points.get(i)), VectorUtils.toView(points.get(i+1)), lineWidth);
+        //}
+        
+        Vector2 a = body.getLinearVelocity().cpy().nor().scl(Game.WORLD_TO_VIEW*3);
+        drawer.line(pos.cpy().sub(a), pos);
         //drawer.filledCircle(pos, p.getRadius()* Game.WORLD_TO_VIEW);
         //drawer.circle(pos.x, pos.y, p.getRadius()* Game.WORLD_TO_VIEW, lineWidth, JoinType.NONE);
     }
     public void update(){
        
         //if(counter%10==0){
-            points.addLast(body.getPosition().cpy());
-            if(points.size()>=4) points.removeFirst();
-       // }
+         
         counter++;
         //body.update();
         

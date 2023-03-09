@@ -26,6 +26,7 @@ public class ExplosionParticle extends Particle{
 
         alphaD = 0.01f;
         color = new Color(Color.RED);
+        
     }
     public ExplosionParticle(float x, float y, Color c){
 

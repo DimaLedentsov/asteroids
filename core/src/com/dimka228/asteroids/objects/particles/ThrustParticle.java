@@ -22,9 +22,9 @@ public class ThrustParticle extends Particle{
     public ThrustParticle(float x, float y, float angle){
 
         pos = new Vector2(x, y);
-        vel = VectorUtils.neg(new Vector2(Vector2.Y)).rotateRad(angle + randomAngle()).scl(velocity);
-        size=0.5f;
-        sizeD=0.01f;
+        vel = VectorUtils.neg(new Vector2(Vector2.Y)).rotateRad(angle + randomAngle()).scl(MathUtils.random(0.1f, velocity));
+        size=MathUtils.random(0.1f,0.5f);
+        sizeD=0.02f;
         velD = 0.1f;
     }
 

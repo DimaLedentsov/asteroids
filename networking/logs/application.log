@@ -18,3 +18,8 @@
 [23:36:21.038 INFO ] [client] first request
 [23:36:21.042 TRACE] [server] sent response to /127.0.0.1:4040
 [23:36:21.044 TRACE] [client] received response from server localhost/127.0.0.1:8080
+[19:39:34.681 TRACE] [client] sent response to serverlocalhost/127.0.0.1:8080
+[19:39:34.683 TRACE] [server] received request from /127.0.0.1:4040
+[19:39:34.687 INFO ] [client] first request
+[19:39:34.695 TRACE] [server] sent response to /127.0.0.1:4040
+[19:39:34.696 TRACE] [client] received response from server localhost/127.0.0.1:8080

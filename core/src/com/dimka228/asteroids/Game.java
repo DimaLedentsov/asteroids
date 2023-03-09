@@ -16,6 +16,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -27,6 +28,9 @@ import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g3d.Shader;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
@@ -39,6 +43,10 @@ import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.crashinvaders.vfx.VfxManager;
+import com.crashinvaders.vfx.effects.BloomEffect;
+import com.crashinvaders.vfx.effects.BloomEffect.Settings;
+import com.crashinvaders.vfx.effects.GaussianBlurEffect.BlurType;
 import com.dimka228.asteroids.objects.*;
 import com.dimka228.asteroids.objects.interfaces.GameObject;
 import com.dimka228.asteroids.objects.interfaces.GameObject.Status;
@@ -81,10 +89,12 @@ public class Game extends ApplicationAdapter {
 		return instance;
 	}
 
-	PolygonBatch renderer;
+	SpriteBatch renderer;
 	ShapeDrawer shapeDrawer;
 	
+	FrameBuffer fbo;
 	Viewport viewport;
+	VfxManager vfxManager;
 	// Texture background;
 	// Sprite backgroundSprite;
 
@@ -121,12 +131,31 @@ public class Game extends ApplicationAdapter {
 
 
 	Label bodyCount;
+
+	ShaderProgram glowShader,fxaaShader;
 	@Override
 	public void create() {
 		isRunning = true;
 		world = new World(new Vector2(0,0), true);
 		
-		renderer = new PolygonSpriteBatch();
+		/*/
+		glowShader = new ShaderProgram(Gdx.files.internal("shaders/Vertex.glsl"), Gdx.files.internal("shaders/GlowFragment.glsl"));
+		if(glowShader.isCompiled())Gdx.app.log("Glow shader Log", '\n' + glowShader.getLog());
+		else Gdx.app.error("Glow shader Log", '\n' + glowShader.getLog());
+		
+		fxaaShader = new ShaderProgram(Gdx.files.internal("shaders/Vertex.glsl"), Gdx.files.internal("shaders/fxaaFragment.glsl"));
+		if(fxaaShader.isCompiled())Gdx.app.log("Fxaa shader Log", '\n' + fxaaShader.getLog());
+		else Gdx.app.error("Fxaa shader Log", '\n' + fxaaShader.getLog());
+		
+		
+		renderer = new PolygonSpriteBatch(200,200,glowShader);*/
+
+		//glowShader = new ShaderProgram(Gdx.files.internal("shaders/Vertex.glsl"), Gdx.files.internal("shaders/GlowFragment.glsl"));
+		//if(glowShader.isCompiled())Gdx.app.log("Glow shader Log", '\n' + glowShader.getLog());
+		//else Gdx.app.error("Glow shader error", '\n' + glowShader.getLog());
+		
+		
+		renderer = new SpriteBatch();
 		Pixmap pixmap = new Pixmap(1, 1, Format.RGBA8888);
 		pixmap.setColor(Color.WHITE);
 		pixmap.drawPixel(0, 0);
@@ -134,8 +163,27 @@ public class Game extends ApplicationAdapter {
 		pixmap.dispose();
 		TextureRegion region = new TextureRegion(texture, 0, 0, 1, 1);
 		shapeDrawer = new ShapeDrawer(renderer,region);
+		
+		vfxManager = new VfxManager(Format.RGBA8888);
+		BloomEffect be = new BloomEffect();
+		be.setBlurType(BlurType.Gaussian5x5b);
+		be.setBlurPasses(20);
+		be.setBlurAmount(0.1f);
+		//be.setBaseSaturation(2);
+		be.setBloomIntensity(2.5f);
+		be.setBloomSaturation(2f);
+		be.setThreshold(0.3f);
+		vfxManager.addEffect(be);
+		//FrameBuffer fbo =  new FrameBuffer(Format.RGBA4444, SCREEN_WIDTH, SCREEN_HEIGHT, false,false);
 		shapeDrawer.setDefaultLineWidth(1);
 
+
+		
+		
+
+
+
+		//renderer.setShader(null);
 		objects = new LinkedList<>();
 		newObjects = new LinkedList<>();
 		// backgroundObjects = new LinkedList<>();
@@ -185,7 +233,7 @@ public class Game extends ApplicationAdapter {
 			addObjectDirectly(b);
 		}
 		
-		for(int i=0; i<0; i++){
+		for(int i=0; i<10; i++){
 			SimpleBot a = new SimpleBot(WORLD_WIDTH/2 , MathUtils.random()*WORLD_HEIGHT, Teams.C);
 			addObjectDirectly(a);
 		}
@@ -208,7 +256,17 @@ public class Game extends ApplicationAdapter {
 
 	@Override
 	public void render() {
-		ScreenUtils.clear(0, 0, 0, 0);
+	
+		/*Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		Gdx.gl.glBlendFunc( GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA );
+        Gdx.gl.glEnable( GL20.GL_BLEND );*/
+		Gdx.gl.glColorMask(true, true, true, true);
+		Gdx.gl.glClearColor(0, 0, 0, 0);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		Gdx.gl.glEnable(GL20.GL_BLEND);
+		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		
 		bodyCount.setText(Integer.toString(world.getBodyCount()) + " : " + Integer.toString(objects.size()));
 		stage.draw();
 		stage.act();
@@ -228,12 +286,27 @@ public class Game extends ApplicationAdapter {
 			isRunning = !isRunning;
 	
 
+		
+		
+		//glowShader.bind();
+		//glowShader.setUniformf("u_texelSize", new Vector2(1f / Gdx.graphics.getWidth() * 4,  1f / Gdx.graphics.getHeight() * 4));
+		//glowShader.setUniformi("horizontal", 0);
+		//if(isRunning)renderer.setShader(glowShader);
+		//else renderer.setShader(null);
+		//glowShader.bind();
+		
+		vfxManager.setDisabled(!isRunning);
+		vfxManager.cleanUpBuffers();
+		vfxManager.beginInputCapture();
+
 		renderer.begin();
 
+		//renderer.flush();
 		shapeDrawer.setColor(Color.GREEN);
 		shapeDrawer.setDefaultLineWidth(3);
 		shapeDrawer.rectangle(10*WORLD_TO_VIEW, 10*WORLD_TO_VIEW, (WORLD_WIDTH-20)*WORLD_TO_VIEW, (WORLD_HEIGHT-20)*WORLD_TO_VIEW);
 
+		
 		objects.addAll(newObjects);
 		newObjects.clear();
 		Iterator<GameObject> iterator = objects.iterator();
@@ -271,7 +344,13 @@ public class Game extends ApplicationAdapter {
 		});*/
 		
 		
+		
+		//renderer.flush();
+		
 		renderer.end();
+		vfxManager.endInputCapture();
+		vfxManager.applyEffects();
+		vfxManager.renderToScreen();
 		if(isRunning)world.step(0.3f, 10, 10);
 
 		
@@ -279,7 +358,7 @@ public class Game extends ApplicationAdapter {
 		//if(Teams.B.getPlayers().size()<100) addObject(new SimpleBot(WORLD_WIDTH*5/6, MathUtils.random()*WORLD_HEIGHT, Teams.B));
 	}
 
-	public PolygonBatch getRenderer() {
+	public SpriteBatch getRenderer() {
 		return renderer;
 	}
 
